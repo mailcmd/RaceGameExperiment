@@ -43,13 +43,17 @@ const roadPoints = [
     new Point(50, 50),
     new Point(250, 70),
     new Point(240, 250),
+    new Point(120, 340),
     new Point(30, 240)
 ];
+
 
 // road declaration
 const world = new World(raceCtx, roadPoints);
 
 world.draw();
+
+//for (let p of roadPoints) p.draw();
 
 // cars declaration and init
 // let you, cars;

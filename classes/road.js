@@ -14,15 +14,18 @@ class Road {
                 : roadPoints[i+1];
             const prevAngle = Point.getAngle(roadPoints[i], prevPoint);
             const nextAngle = Point.getAngle(roadPoints[i], nextPoint);
-            const angle = prevAngle - nextAngle / 2;
+            const angle = prevAngle + (Math.PI * 2  - (prevAngle - nextAngle)) / 2;
+            const p1 = roadPoints[i].project(roadWidth, angle);
+            const p2 = roadPoints[i].project(roadWidth, angle + Math.PI);
             leftPoints.push( 
-                roadPoints[i].project(roadWidth, angle) 
+                
             );
             rightPoints.push( 
-                roadPoints[i].project(roadWidth, angle + Math.PI) 
+                
             );
         }
         for (let i = 0; i < leftPoints.length-1; i++) {
+            leftPoints[i].draw()
             this.leftSegments.push(
                 new Segment( leftPoints[i], leftPoints[i+1] )
             );    
@@ -30,6 +33,7 @@ class Road {
                 new Segment( rightPoints[i], rightPoints[i+1] )
             );    
         }
+        leftPoints[leftPoints.length-1].draw()
         this.leftSegments.push(
             new Segment( leftPoints[leftPoints.length-1], leftPoints[0] )
         );    
@@ -39,9 +43,7 @@ class Road {
     }
 
     draw() {
-        log(this.leftSegments)
         for (let i = 0; i < this.leftSegments.length; i++) {
-
             this.world.ctx.beginPath();
             this.world.ctx.moveTo(this.leftSegments[i].p1.x, this.leftSegments[i].p1.y);
             this.world.ctx.lineTo(this.leftSegments[i].p2.x, this.leftSegments[i].p2.y);
