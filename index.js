@@ -8,8 +8,9 @@ const Neuron = synaptic.Neuron,
 
 // config constants
 const carsCount = 100; 
-const trafficCount = 25;
 const maxSpeedCars = 500;
+const roadColor = '#c0c0c0';
+const roadSignals = 'white';
 
 
 // global variables

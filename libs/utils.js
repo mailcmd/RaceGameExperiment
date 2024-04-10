@@ -1,3 +1,12 @@
+const PI = Math.PI;
+const tan = Math.tan;
+const cos = Math.cos;
+const sin = Math.sin;
+const atan = Math.atan;
+const atan2 = Math.atan2;
+const acos = Math.acos;
+const asin = Math.asin;
+
 function lerp(a, b, t) {
     return a + (b - a) * t;
 }
@@ -9,6 +18,36 @@ function relu(n) {
 function normalize(n, t) {    
     return n / t;
 }
+
+/*
+
+200 -> -160 -> a - 360
+330 -> -30  -> a - 360
+560 -> -160 -> a - 360 -> 200 
+380 -> 20   -> a - 360
+
+-200 -> 160 -> 360 + a 
+-330 -> 30  -> 360 + a
+-560 -> 160 -> 360 + a -> 200 
+-380 -> 20   -> a - 360
+
+
+*/
+function standarizeAngle2M(a) {
+    if (a >= -PI && a <= PI) return a;    
+    if (a > PI) {
+        return standarizeAngle2M(a - 2*PI);
+    } else if (a < -PI) {
+        return standarizeAngle2M(2*PI + a);
+    }
+}
+
+function standarizeAngle1E(a) {
+    a = standarizeAngle2M(a);
+    if (a >= 0) return a;    
+    return 2*PI + a;
+}
+
 
 function getIntersection(A, B, C, D) {
     const tTop = (D.x - C.x) * (A.y - C.y) - (D.y - C.y) * (A.x - C.x);
@@ -104,3 +143,4 @@ function random(max) {
         a.dispatchEvent(e)
     }
 })(console)
+
