@@ -11,7 +11,7 @@ const carsCount = 100;
 const maxSpeedCars = 500;
 const roadColor = '#c0c0c0';
 const roadSignals = 'white';
-
+const roadWidth = 50;
 
 // global variables
 let frameTime = 0;
@@ -40,12 +40,13 @@ raceCanvas.width = window.innerWidth * 5;
 raceCanvas.height = window.innerHeight * 5 ;
 const raceCtx = raceCanvas.getContext('2d');
 
+
 const roadPoints = [
-    new Point(50, 50),
-    new Point(250, 70),
-    new Point(240, 250),
-    new Point(120, 340),
-    new Point(30, 240)
+    new Point(100, 100),
+    new Point(1305, 70),
+    new Point(1240, 550),
+    new Point(120, 640),
+    new Point(200, 440)
 ];
 
 

@@ -7,7 +7,7 @@ class World {
         this.camera = new Camera();
         this.road = new Road(this, {
             roadPoints: roadPoints,
-            roadWidth: 20
+            roadWidth: roadWidth
         });
     }
 

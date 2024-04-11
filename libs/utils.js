@@ -7,6 +7,8 @@ const atan2 = Math.atan2;
 const acos = Math.acos;
 const asin = Math.asin;
 
+Number.prototype.deg = function() { return this*180/Math.PI ;}
+
 function lerp(a, b, t) {
     return a + (b - a) * t;
 }

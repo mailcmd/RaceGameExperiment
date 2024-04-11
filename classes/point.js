@@ -4,11 +4,12 @@ class Point {
         this.y = y;
     }
 
-    draw(color = 'red') {
-        raceCtx.beginPath();
-        raceCtx.arc(this.x, this.y, 2, 0, Math.PI*2);
-        raceCtx.fillStyle = color;
-        raceCtx.fill()
+    draw(ctx, color = 'red') {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 2, 0, Math.PI*2);
+        ctx.fillStyle = color;
+        ctx.fill()
+        return this;
     }
     angleTo(p) {
         return Point.getAngle(this, p);
