@@ -5,12 +5,13 @@ class Controls {
         this.left = 0; 
         this.right = 0; 
         this.car = car;
+        this.userAction = false;
 
         switch (type) {
-            case 'KEYS':
+            case USER:
                 this.#addKeyboardListeners();
                 break;
-            case 'DUMMY':
+            case DUMMY:
                 this.forward = 1;
                 break;
         }
@@ -18,54 +19,18 @@ class Controls {
 
     #addKeyboardListeners() {
         document.onkeydown = (e) => {
-            let addTrainData = false;
-            switch (e.key) {
-                case 'ArrowLeft':
-                    addTrainData = true;
-                    this.left = 1;
-                    break;
-                case 'ArrowRight':
-                    addTrainData = true;
-                    this.right = 1;
-                    break;
-                case 'ArrowUp':
-                    addTrainData = true;
-                    this.forward = 1;
-                    // this.reverse = 0;
-                    break;
-                case 'ArrowDown':
-                    addTrainData = true;
-                    this.reverse = 1;
-                    // this.forward = 0;
-                    break;
-            }
-            if (addTrainData) {
-                addTrainingData(this.car);
-            }
+            if (e.key == 'ArrowLeft') this.left = 1;
+            if (e.key == 'ArrowRight') this.right = 1;
+            if (e.key == 'ArrowUp') this.up = 1;
+            if (e.key == 'ArrowDown') this.down = 1;
+            this.userAction = this.left || this.right || this.down || this.up;
         };
         document.onkeyup = (e) => {
-            let addTrainData = false;
-            switch (e.key) {
-                case 'ArrowLeft':
-                    addTrainData = true;
-                    this.left = 0;
-                    break;
-                case 'ArrowRight':
-                    addTrainData = true;
-                    this.right = 0;
-                    break;
-                case 'ArrowUp':
-                    addTrainData = true;
-                    this.forward = 0;
-                    break;
-                case 'ArrowDown':
-                    addTrainData = true;
-                    this.reverse = 0;
-                    break;
-            }
-            if (addTrainData) {
-                addTrainingData(this.car);
-            }
+            if (e.key == 'ArrowLeft') this.left = 0;
+            if (e.key == 'ArrowRight') this.right = 0;
+            if (e.key == 'ArrowUp') this.up = 0;
+            if (e.key == 'ArrowDown') this.down = 0;
+            this.userAction = this.left || this.right || this.down || this.up;
         }
     }
 

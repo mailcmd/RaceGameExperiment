@@ -6,6 +6,8 @@ const atan = Math.atan;
 const atan2 = Math.atan2;
 const acos = Math.acos;
 const asin = Math.asin;
+const abs = Math.abs;
+const sign = Math.sign;
 
 Number.prototype.deg = function() { return this*180/Math.PI ;}
 
@@ -36,6 +38,7 @@ function normalize(n, t) {
 
 */
 function standarizeAngle2M(a) {
+//    if (a == 2*PI) a = 0;
     if (a >= -PI && a <= PI) return a;    
     if (a > PI) {
         return standarizeAngle2M(a - 2*PI);
@@ -45,6 +48,7 @@ function standarizeAngle2M(a) {
 }
 
 function standarizeAngle1E(a) {
+//    if (a == 2*PI) a = 0;
     a = standarizeAngle2M(a);
     if (a >= 0) return a;    
     return 2*PI + a;
@@ -74,15 +78,7 @@ function getIntersection(A, B, C, D) {
 function polysIntersect(poly1, poly2) {
     for (let i = 0; i < poly1.length; i++) {
         for (let j = 0; j < poly2.length; j++) {
-            const touch = getIntersection(
-                poly1[i],
-                poly1[(i+1) % poly1.length],
-                poly2[j],
-                poly2[(j+1) % poly2.length],
-            );
-            if (touch) {
-                return true;
-            }
+            if (poly1[i].intersectionWith(poly2[j])) return true;
         }
     }
     return false;
@@ -118,6 +114,19 @@ function randomGaussian(mean = 0, stdev = 1) {
 function random(max) {
     return Math.random() * max;  
 }
+
+function imagedata2image(imagedata) {
+    var canvas = document.createElement('canvas');
+    var ctx = canvas.getContext('2d');
+    canvas.width = imagedata.width;
+    canvas.height = imagedata.height;
+    ctx.putImageData(imagedata, 0, 0);
+
+    var image = new Image();
+    image.src = canvas.toDataURL();
+    return image;
+}
+
 
 (function(console){
 

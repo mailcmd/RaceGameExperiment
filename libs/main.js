@@ -3,63 +3,14 @@ function animate(time) {
     deltaTime = Math.min(time - frameTime, 300);
     frameTime = time;
 
-    for (let i = 0; i < traffic.length; i++) {
-        traffic[i].update(road.borders, []);
-    }
-
-    for (let i = 0; i < cars.length; i++) {
-        cars[i].update(road.borders, traffic);
-    }
+    // main tasks    
+    world.update();
+    viewport.setCenter(car.x, car.y);
+    viewport.display();
     
-    carCanvas.height = window.innerHeight;
-    networkCanvas.height = window.innerHeight;
-
-    const carMaxScore = Math.max(...cars.map( c => c.score ));
-    bestCar = cars.find( car => car.score ==  carMaxScore) ?? bestCar;
-    panelMaxOC.innerHTML = bestCar.overpassedCars;
-    if (controlType == 'AI' && bestCar.overpassedCars >= traffic.length) {
-        paused = true;
-        saveModel();
-    }
-    panelAvgFitness.innerHTML = ~~(bestCar.score);
-    if (controlType == 'AI' && resetTimeOut == -1 && bestCar.damaged ) {
-        resetTimeOut = setTimeout(()=> {
-            resetTimeOut = -1;    
-            createNextGeneration();
-        }, 3000)
-    } else if (controlType == 'AI' && !bestCar.damaged) {
-        clearTimeout(resetTimeOut);
-        resetTimeOut = -1;
-    }
-
-    carCtx.save();
-    carCtx.translate(0, -bestCar.y + carCanvas.height * 0.5);
-
-    if (refreshCanvas) road.draw();
-    for (let i = 0; i < traffic.length; i++) {
-        if (refreshCanvas) traffic[i].draw();
-    }
-
-    carCtx.globalAlpha = 0.2;
-    for (let i = 0; i < cars.length; i++) {
-        if (refreshCanvas) cars[i].draw();
-    }
-    carCtx.globalAlpha = 1;
-    if (refreshCanvas) bestCar.draw(true);
-
-    carCtx.restore();
-
-    //Visualizer.drawNetwork(bestCar.brain);
-
     if (!paused) {
         requestAnimationFrame(animate);
     } 
-
-    if (controlType == 'AI' && resetGameNow || cars.filter( c => !c.damaged ).length == 0) {
-		createNextGeneration();
-	} else if (controlType == 'KEYS' && resetGameNow) {
-		resetGame();
-	}
 
 }
 

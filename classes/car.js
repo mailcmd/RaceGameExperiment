@@ -1,51 +1,52 @@
 class Car {
     constructor({ 
             x, y, width, height, 
-            controlType = 'AI', 
+            controlType = CPU, 
             maxSpeed = maxSpeedCars, 
             color = 'blue', 
             model,
+            road = null,
             sensorsCount = 5
         }) {
 
         this.x = x;
         this.y = y;
-        this.initialY = y;
+        this.lastGoodPos = new Point(x, y);
         this.width = width;
         this.height = height;
-        this.maxSpeed = maxSpeed;
         this.sensorsCount = sensorsCount;
         this.color = color;
+        this.road = road;
+        
+        this.maxSpeed = maxSpeed;
+        this.saveMaxSpeed = maxSpeed;
         this.distance = 0;
-
         this.idiotCounter = 0;
         this.speed = 0;
         this.overpassedCars = 0;
-        this.acceleration = 25;
-        this.friction = 2;
-        this.angle = 0;
+        this.acceleration = 45;
+        this.friction = 15;
+        this._angle = 0;
+        this.angle = road ? road.roadPoints[0].angleTo(road.roadPoints[1]) : 0;        
+        this.lastGoodPos.angle = this.angle;
         this.damaged = false;
         this.fitness = 0;
         this.score = 0;
         this.updateCounter = 0;
         
-        this.saveStages = [ 0.5, 0.75, 1 ];
+        this.useBrain = controlType == CPU;
 
-        this.useBrain = controlType == 'AI';
-
-        if (controlType != 'DUMMY') {
+        if (this.useBrain) {
             this.sensor = new Sensor(this, this.sensorsCount);
-
             const center = this.sensorsCount % 2 == 1 ? 4 : 5;
-            const sides = this.sensorsCount - center + 1;
-        
+            const sides = this.sensorsCount - center + 1;        
             this.brain = new NeuralNetwork(center, sides);
-
             if (model) {
                 this.brain.load(model);
             }
-        }
-        this.controls = new Controls(controlType, this);
+        } else {
+            this.controls = new Controls(controlType, this);
+        }        
 
         this.img = new Image();
         this.mask = document.createElement('canvas');
@@ -65,94 +66,261 @@ class Car {
         this.img.src = 'images/car.png';
     }
 
-    async update(roadBorders, traffic) {
-        if (this.idiotCounter >= 60 * 3) {
-            this.damaged = true;
-        }
-        if (!this.damaged) {
-            this.#move();
-            this.polygon = this.#createPolygon();
-
-            if (this.sensor) {
-                this.damaged = this.#assessDamage(roadBorders, traffic);
-                this.calculateScore(traffic);
-
-                this.sensor.update(roadBorders, traffic);
-
-                if (this.useBrain) {
-                    const sensors = this.getInputs();
+    get angle() {
+        return standarizeAngle1E(this._angle + PI / 2);
+    }
+    set angle(a) {
+        this._angle = standarizeAngle1E(a - PI / 2);
+    }
+    
+    update() {
+        //if (this.idiotCounter >= 60 * 3) {
+        //    this.damaged = true;
+        //}
+        if (!this.damaged) {            
+            if (this.useBrain) {
+                //this.calculateScore(traffic);
+                //this.sensor.update(road, traffic);
+                const sensors = this.getInputs();
                     
-                    const inputs = [
+                const inputs = [
                         ...sensors.slice(Math.ceil((this.sensorsCount - 4) / 2), Math.ceil((this.sensorsCount - 4) / 2) + (this.sensorsCount % 2 == 0 ? 2 : 1)),
                         ...sensors.slice(-3),
                         ...sensors.slice(0, Math.ceil((this.sensorsCount - 4) / 2)),
                         ...sensors.slice(Math.ceil((this.sensorsCount - 4) / 2) + 2, -3),
                         sensors[sensors.length-1]
-                    ];
+                ];
 
-                    let outputs = [ 0,0,0,0 ];
-                    outputs = this.brain.feedForward(inputs);
-                    //log(outputs.toString())
-                    this.controls.left = outputs[0];
-                    this.controls.forward = outputs[1];
-                    this.controls.right = outputs[2];
-                    this.controls.reverse = outputs[3];
-                }
-                if (!this.useBrain && this.speed > 0 && this.updateCounter % 1 == 0) {
-                    addTrainingData(this);
-                }
-
-                if (!this.useBrain && this.saveStages.length > 0 && this.getProgress() >= this.saveStages[0]) {
-                    this.saveStages.shift();
-                    saveTrainingDataBatch();
-                    log('Progress: ', this.getProgress());
-                }
-
+                let outputs = [ 0,0,0,0 ];
+                outputs = this.brain.feedForward(inputs);
+                //log(outputs.toString())
+                this.controls.left = outputs[0];
+                this.controls.up = outputs[1];
+                this.controls.right = outputs[2];
+                this.controls.down = outputs[3];                
+            } 
+            
+            this.#move();
+            this.polygon = this.#createPolygon();
+            this.damaged = this.#assessDamage();
+            if (this.damaged) {
+                setTimeout((function(){
+                    this.repair();
+                }).bind(this), 1500);
             }
-            this.updateCounter++;    
+            /*    
+            if (this.penalized) {
+                this.maxSpeed = this.saveMaxSpeed * 0.2;
+            } else {
+                this.maxSpeed = this.saveMaxSpeed;
+            }
+            */
         }
-        if (this.sensor) this.calculateScore(traffic);
+        //if (this.useBrain) this.calculateScore(traffic);
+    }
+
+    repair() {
+        let nearest = null;
+        const carPos = new Point(this.x, this.y);
+        const minDistance = Math.min(...this.road.roadPoints.map( a => carPos.distanceTo(new Point(a.x, a.y)) ));
+        const idx = this.road.roadPoints.findIndex( a => carPos.distanceTo(new Point(a.x, a.y)) == minDistance );
+        this.x = this.road.roadPoints[idx].x;
+        this.y = this.road.roadPoints[idx].y; 
+        this.angle = this.road.roadPoints[idx].angleTo( this.road.roadPoints[idx == this.road.roadPoints.length-1 ? 0 : idx+1 ] );
+        this.damaged = false;
+        this.speed = 0;
+    }
+    
+    draw({ ctx, drawSensors = false}) {        
+        if (drawSensors && this.sensor) {
+            this.sensor.draw();
+        }
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(-this._angle);
+        if (!this.damaged) {
+            ctx.drawImage(
+                this.mask, 
+                -this.width / 2, -this.height / 2,
+                this.width, this.height
+            );
+            ctx.globalCompositeOperation = 'multiply';
+        }
+        ctx.drawImage(
+            this.img, 
+            -this.width / 2, -this.height / 2,
+            this.width, this.height
+        );
+        ctx.restore();
+    }
+
+    #assessDamage() {
+        if (this.road) {
+            if (polysIntersect(this.polygon, this.road.leftSegments)) {
+                return true;
+            }            
+            if (polysIntersect(this.polygon, this.road.rightSegments)) {
+                return true;
+            }            
+        }
+        /*
+        for (let i = 0; i < traffic.length; i++) {
+            if (polysIntersect(this.polygon, traffic[i].polygon)) {
+                return true;
+            }            
+        }
+        */
+        return false;
+    }
+
+    #createPolygon() {
+        const points = [];
+        const rad = 0.85*Math.hypot(this.width, this.height) / 2;
+        const alpha = Math.atan2(this.width, this.height);
+        points.push(new Point(
+             this.x - Math.sin(this.angle - alpha) * rad,
+             this.y - Math.cos(this.angle - alpha) * rad
+        ));
+        points.push(new Point(
+            this.x - Math.sin(this.angle + alpha) * rad,
+            this.y - Math.cos(this.angle + alpha) * rad
+        ));
+        points.push(new Point(
+            this.x - Math.sin(Math.PI + this.angle - alpha) * rad,
+            this.y - Math.cos(Math.PI + this.angle - alpha) * rad
+        ));
+        points.push(new Point(
+            this.x - Math.sin(Math.PI + this.angle + alpha) * rad,
+            this.y - Math.cos(Math.PI + this.angle + alpha) * rad
+        ));
+        const segments = [];
+        segments.push( new Segment(points[0], points[1]) );
+        segments.push( new Segment(points[1], points[2]) );
+        segments.push( new Segment(points[2], points[3]) );
+        segments.push( new Segment(points[3], points[0]) );
+        return segments;
+    }
+    
+    #rotateTo(angle) {    
+        const eps = 0.2;
+        const flip = 0.2;
+        if (abs(this.angle - angle) <= eps) {
+            this.angle = angle; 
+            return;
+        }
+        if (angle == 0) {
+            if (this.angle > PI) {
+                this.angle += flip; 
+            } else {
+                this.angle -= flip; 
+            }
+        } else if (angle > this.angle && abs(angle - this.angle) < PI) {
+            this.angle += flip; 
+        } else {
+            this.angle -= flip; 
+        }
+    }
+
+    #move() {
+        const previousPos = { x: this.x, y: this.y };
+        const deltaCoef = deltaTime / 1000;
+
+        if (this.controls.userAction) {
+            this.speed += this.acceleration;
+        } 
+
+        this.speed -= this.friction;
+
+        this.speed = this.speed > this.maxSpeed 
+            ? this.maxSpeed 
+            : this.speed <= this.friction ? 0 : this.speed;            
+
+        if (this.speed > 0) {        
+            if (this.controls.up && this.controls.right) {
+                this.#rotateTo(PI/4);
+            } else if (this.controls.up && this.controls.left) {
+                this.#rotateTo(3*PI/4);
+            } else if (this.controls.down && this.controls.left) {
+                this.#rotateTo(5*PI/4);
+            } else if (this.controls.down && this.controls.right) {
+                this.#rotateTo(7*PI/4);
+            } else if (this.controls.up) {
+                this.#rotateTo(PI/2);
+            } else if (this.controls.down) {
+                this.#rotateTo(3*PI/2);
+            } else if (this.controls.left) {
+                this.#rotateTo(PI);
+            } else if (this.controls.right) {
+                this.#rotateTo(0);
+            }
+        }
+
+        this.speed = this.speed > this.maxSpeed 
+            ? this.maxSpeed 
+            : this.speed <= this.friction ? 0 : this.speed;
+
+        const mx = Math.sin(this._angle) * this.speed * deltaCoef;
+        const my = Math.cos(this._angle) * this.speed * deltaCoef;
+
+        this.x -= mx;
+        this.y -= my;
+
+        if (this.x < 0 || this.x > world.width) this.x = previousPos.x;
+        if (this.y < 0 || this.y > world.height) this.y = previousPos.y;
+
+        //this.distance += Math.hypot(mx, my);
+    }
+
+    #linearMove() {
+        const previousPos = { x: this.x, y: this.y };
+        const deltaCoef = deltaTime / 1000;
+
+        if (this.controls.forward) {
+            this.speed += this.acceleration;
+        }
+        if (this.controls.reverse) {
+            this.speed -= this.acceleration * 0.7;
+        }
+
+        this.speed = this.speed > this.maxSpeed 
+            ? this.maxSpeed 
+            : (this.speed < -this.maxSpeed/2 
+                ? -this.maxSpeed/2 
+                : (Math.abs(this.speed) < this.friction ? 0 : this.speed)
+            );
+        this.speed -= Math.sign(this.speed) * this.friction;
+
+        if (this.speed != 0) {
+            const flip = Math.sign(this.speed);
+            if (this.controls.left) {
+                this.angle += 0.1*flip;
+            }
+            if (this.controls.right) {
+                this.angle -= 0.1*flip;
+            }
+        }
+
+        const mx = Math.sin(this.angle) * this.speed * deltaCoef;
+        const my = Math.cos(this.angle) * this.speed * deltaCoef;
+
+        this.x -= mx;
+        this.y -= my;
+
+        //this.distance += Math.hypot(mx, my);
     }
 
     calculateScore(traffic) {
         //if (!this.damaged) 
-        this.score = -this.y;// * this.speed;
+        //this.score = -this.y;// * this.speed;
         //return this.score;
         let overpassedCars = 0;
         for (let i = 0; i < traffic.length; i++) {
             overpassedCars += this.y < traffic[i].y ? 1 : 0; 
         }
-        // if (overpassedCars <= this.overpassedCars) {
-        //     this.idiotCounter++;
-        // }
         this.overpassedCars = Math.max(this.overpassedCars, overpassedCars);
         this.score = (this.overpassedCars + 1) * this.score;
 
         return this.score;
-    }
-
-    draw(drawSensors = false) {        
-        if (drawSensors && this.sensor) {
-            this.sensor.draw();
-        }
-        carCtx.save();
-        carCtx.translate(this.x, this.y);
-        carCtx.rotate(-this.angle);
-        if (!this.damaged) {
-            carCtx.drawImage(
-                this.mask, 
-                -this.width / 2, -this.height / 2,
-                this.width, this.height
-            );
-            carCtx.globalCompositeOperation = 'multiply';
-        }
-        carCtx.drawImage(
-            this.img, 
-            -this.width / 2, -this.height / 2,
-            this.width, this.height
-        );
-
-        carCtx.restore();
     }
 
     copy() {
@@ -195,85 +363,5 @@ class Car {
         return this.overpassedCars / traffic.length;
     }
 
-    #createPolygon() {
-        const points = [];
-        const rad = 0.85*Math.hypot(this.width, this.height) / 2;
-        const alpha = Math.atan2(this.width, this.height);
-        points.push({
-             x: this.x - Math.sin(this.angle - alpha) * rad,
-             y: this.y - Math.cos(this.angle - alpha) * rad,
-        });
-        points.push({
-            x: this.x - Math.sin(this.angle + alpha) * rad,
-            y: this.y - Math.cos(this.angle + alpha) * rad,
-       });
-       points.push({
-            x: this.x - Math.sin(Math.PI + this.angle - alpha) * rad,
-            y: this.y - Math.cos(Math.PI + this.angle - alpha) * rad,
-        });
-        points.push({
-            x: this.x - Math.sin(Math.PI + this.angle + alpha) * rad,
-            y: this.y - Math.cos(Math.PI + this.angle + alpha) * rad,
-        });
-        return points;
-    }
-
-    #assessDamage(roadBorders, traffic) {
-        if (this.y > 400) true;
-        for (let i = 0; i < roadBorders.length; i++) {
-            if (polysIntersect(this.polygon, roadBorders[i])) {
-                return true;
-            }            
-        }
-        for (let i = 0; i < traffic.length; i++) {
-            if (polysIntersect(this.polygon, traffic[i].polygon)) {
-                return true;
-            }            
-        }
-        return false;
-    }
-
-    #move() {
-        const previousPos = { x: this.x, y: this.y };
-        const deltaCoef = deltaTime / 1000;
-
-        if (this.controls.forward) {
-            this.speed += this.acceleration;
-        }
-        if (this.controls.reverse) {
-            this.speed -= this.acceleration * 0.2;
-        }
-
-        this.speed = this.speed > this.maxSpeed 
-            ? this.maxSpeed 
-            : (this.speed < -this.maxSpeed/2 
-                ? -this.maxSpeed/2 
-                : (Math.abs(this.speed) < this.friction ? 0 : this.speed)
-            );
-        this.speed -= Math.sign(this.speed) * this.friction;
-
-        if (this.speed != 0) {
-            const flip = Math.sign(this.speed);
-            if (this.controls.left) {
-                this.angle += 0.007*flip;
-            }
-            if (this.controls.right) {
-                this.angle -= 0.007*flip;
-            }
-        }
-
-        const mx = Math.sin(this.angle) * this.speed * deltaCoef;
-        const my = Math.cos(this.angle) * this.speed * deltaCoef;
-        this.x -= mx;
-        this.y -= my;
-
-        //this.distance += Math.hypot(mx, my);
-
-        if (previousPos.x == this.x && previousPos.y <= this.y) {
-            this.idiotCounter++;
-        } else {
-            this.distance += Math.hypot(mx, my);
-        }
-    }
 }
 

@@ -6,12 +6,17 @@ const Neuron = synaptic.Neuron,
 	Trainer = synaptic.Trainer,
 	Architect = synaptic.Architect;
 
+// DATA CONSTANTS
+const USER = 1, CPU = 2, DUMMY = 3;
+ 
+
 // config constants
 const carsCount = 100; 
 const maxSpeedCars = 500;
-const roadColor = '#c0c0c0';
+const terrainColor = '#60AF60';
+const roadColor = '#707070';
 const roadSignals = 'white';
-const roadWidth = 50;
+const roadWidth = 100;
 
 // global variables
 let frameTime = 0;
@@ -27,35 +32,76 @@ document.onkeypress = e => {
         (paused = !paused) || animate(frameTime) ;
         document.getElementById('paused').style.display = paused ? 'flex' : 'none';
     } else if (e.keyCode == 13) {
-        refreshCanvas = !refreshCanvas;
     } else if (e.keyCode == 82 || e.keyCode == 114) {
         resetGameNow = true;
-    } else if (e.keyCode == 83 || e.keyCode == 115) {
-        saveModel();
+    } else if (e.keyCode == 100) {
+        viewport.moveCenter(-20, 0);
+    } else if (e.keyCode == 97) {
+        viewport.moveCenter(20, 0);
+    } else if (e.keyCode == 115) {
+        viewport.moveCenter(0, -20);
+    } else if (e.keyCode == 119) {
+        viewport.moveCenter(0, 20);
     }
 };
 
 // main settings
-raceCanvas.width = window.innerWidth * 5;
-raceCanvas.height = window.innerHeight * 5 ;
-const raceCtx = raceCanvas.getContext('2d');
+//document.body.style.backgroundColor = terrainColor;
+viewportCanvas.style.backgroundColor = terrainColor;
+viewportCanvas.style.position = 'fixed';
+viewportCanvas.style.border = '1px solid black';
+viewportCanvas.width = window.innerWidth*1;
+viewportCanvas.height = window.innerHeight*1;
+viewportCanvas.style.left = ((window.innerWidth - viewportCanvas.width) / 2) + 'px';
+viewportCanvas.style.top = ((window.innerHeight - viewportCanvas.height) / 2) + 'px';
+const viewportCtx = viewportCanvas.getContext('2d');
 
+/*
+viewportDiv.style.backgroundColor = terrainColor;
+viewportDiv.style.position = 'fixed';
+viewportDiv.style.border = '1px solid black';
+viewportDiv.style.width = (window.innerWidth*0.6) + 'px';
+viewportDiv.style.height = (window.innerHeight*0.8) + 'px';
+viewportDiv.style.left = ((window.innerWidth - viewportDiv.clientWidth) / 2) + 'px';
+viewportDiv.style.top = ((window.innerHeight - viewportDiv.clientHeight) / 2) + 'px';
+viewportDiv.style.overflow = 'hidden';
+*/
 
+// road declaration
 const roadPoints = [
-    new Point(100, 100),
-    new Point(1305, 70),
-    new Point(1240, 550),
+    new Point(100, 200),
+    new Point(2305, 150),
+    new Point(2240, 550),
     new Point(120, 640),
     new Point(200, 440)
 ];
 
+//create world
+const world = new World({ roadPoints, viewportCtx });
 
-// road declaration
-const world = new World(raceCtx, roadPoints);
+const car = new Car({
+    x: roadPoints[0].x,
+    y: roadPoints[0].y,    
+    width: 30,
+    height: 50,
+    road: world.road,
+    controlType: USER,
+    sensorsCount: 31,
+//    model: model
+});
 
-world.draw();
+world.addEntity(car);
 
-//for (let p of roadPoints) p.draw();
+const viewport = new Viewport({
+    ctx: viewportCtx,
+    world: world
+});
+
+//viewport.setCenter(car.x, car.y);
+
+// init main loop
+animate(1);
+
 
 // cars declaration and init
 // let you, cars;

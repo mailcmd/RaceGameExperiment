@@ -1,6 +1,8 @@
 class Road {
     constructor(world, { roadPoints, roadWidth }) {
         this.world = world;
+        this.roadPoints = roadPoints;
+        this.roadWidth = roadWidth;
         this.leftSegments = [];
         this.rightSegments = [];
 
@@ -60,7 +62,7 @@ class Road {
         this.leftSegments.shift();
 
         // Right side segments
-        let rightSegments = [];
+        const rightSegments = [];
         for (let i = 0; i < rightPoints.length-1; i+=2) {
             const newSegment = new Segment( rightPoints[i], rightPoints[i+1] );
             if (i > 0 && !Segment.getIntersection(newSegment, rightSegments[rightSegments.length-1])) {
@@ -73,8 +75,6 @@ class Road {
             );
         }
 
-//        this.rightSegments = rightSegments;
-        const temp = [];
         for (let i = 0; i < rightSegments.length; i++) {
             const prevSeg = i == 0 ? rightSegments[rightSegments.length-1] : rightSegments[i-1];
             const curSeg = rightSegments[i];
@@ -82,11 +82,9 @@ class Road {
 
             const p1 = Segment.getIntersection( curSeg, prevSeg);//.draw(raceCtx, 'white');
             const p2 = Segment.getIntersection( curSeg, nextSeg);//.draw(raceCtx, 'red');
-            temp.push((new Segment(p1, p2)));
+            this.rightSegments.push((new Segment(p1, p2)));
         }
         
-        this.rightSegments = temp;
-
         for (let i = 0; i < this.rightSegments.length-1; i++) {
             newSegments = Segment.addCurve(this.rightSegments[i], this.rightSegments[i+1]); //, { granularity: 3, amplitude: 20 } ));
             if (!newSegments.length) continue;
@@ -100,7 +98,9 @@ class Road {
     }
 
     draw() {
-
+        
+new Point(0,0).draw(this.world.ctx)
+        
         this.world.ctx.beginPath();
         this.world.ctx.moveTo(this.leftSegments[0].p1.x, this.leftSegments[0].p1.y);
         for (let i = 0; i < this.leftSegments.length-1; i++) {
@@ -113,10 +113,10 @@ class Road {
         this.world.ctx.fill();
                 
         this.world.ctx.strokeStyle = roadColor;
-        this.world.ctx.lineWidth = 10;
+        this.world.ctx.lineWidth = 14;
         this.world.ctx.stroke();
         this.world.ctx.strokeStyle = roadSignals;
-        this.world.ctx.lineWidth = 4;
+        this.world.ctx.lineWidth = 6;
         this.world.ctx.stroke();
         
         this.world.ctx.beginPath();
@@ -134,10 +134,11 @@ class Road {
         this.world.ctx.restore();
 
         this.world.ctx.strokeStyle = roadColor;
-        this.world.ctx.lineWidth = 10;
+        this.world.ctx.lineWidth = 14;
         this.world.ctx.stroke();
         this.world.ctx.strokeStyle = roadSignals;
-        this.world.ctx.lineWidth = 4;
+        this.world.ctx.lineWidth = 6;
         this.world.ctx.stroke();
+        
     }
 }
