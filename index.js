@@ -7,7 +7,8 @@ const Neuron = synaptic.Neuron,
 	Architect = synaptic.Architect;
 
 // DATA CONSTANTS
-const USER = 1, CPU = 2, DUMMY = 3;
+const USER_KEYBOARD = 1, USER_JOYSTICK = 2, CPU = 3, DUMMY = 4;
+const STATIC = 1, ROTATE = 2;
  
 
 // config constants
@@ -19,6 +20,7 @@ const roadSignals = 'white';
 const roadWidth = 100;
 
 // global variables
+let frameCount = 0;
 let frameTime = 0;
 let deltaTime = 0;
 let resetTimeOut = -1;
@@ -50,22 +52,11 @@ document.onkeypress = e => {
 viewportCanvas.style.backgroundColor = terrainColor;
 viewportCanvas.style.position = 'fixed';
 viewportCanvas.style.border = '1px solid black';
-viewportCanvas.width = window.innerWidth*1;
-viewportCanvas.height = window.innerHeight*1;
+viewportCanvas.height = window.innerHeight*0.9;
+viewportCanvas.width = window.innerWidth*0.7;
 viewportCanvas.style.left = ((window.innerWidth - viewportCanvas.width) / 2) + 'px';
 viewportCanvas.style.top = ((window.innerHeight - viewportCanvas.height) / 2) + 'px';
 const viewportCtx = viewportCanvas.getContext('2d');
-
-/*
-viewportDiv.style.backgroundColor = terrainColor;
-viewportDiv.style.position = 'fixed';
-viewportDiv.style.border = '1px solid black';
-viewportDiv.style.width = (window.innerWidth*0.6) + 'px';
-viewportDiv.style.height = (window.innerHeight*0.8) + 'px';
-viewportDiv.style.left = ((window.innerWidth - viewportDiv.clientWidth) / 2) + 'px';
-viewportDiv.style.top = ((window.innerHeight - viewportDiv.clientHeight) / 2) + 'px';
-viewportDiv.style.overflow = 'hidden';
-*/
 
 // road declaration
 const roadPoints = [
@@ -85,7 +76,7 @@ const car = new Car({
     width: 30,
     height: 50,
     road: world.road,
-    controlType: USER,
+    controlType: USER_KEYBOARD,
     sensorsCount: 31,
 //    model: model
 });
@@ -94,7 +85,8 @@ world.addEntity(car);
 
 const viewport = new Viewport({
     ctx: viewportCtx,
-    world: world
+    world: world,
+    mode: STATIC
 });
 
 //viewport.setCenter(car.x, car.y);

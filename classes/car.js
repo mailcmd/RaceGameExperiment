@@ -100,6 +100,7 @@ class Car {
                 this.controls.down = outputs[3];                
             } 
             
+            //this.#linearMove();
             this.#move();
             this.polygon = this.#createPolygon();
             this.damaged = this.#assessDamage();
@@ -175,7 +176,7 @@ class Car {
 
     #createPolygon() {
         const points = [];
-        const rad = 0.85*Math.hypot(this.width, this.height) / 2;
+        const rad = 0.75*Math.hypot(this.width, this.height) / 2;
         const alpha = Math.atan2(this.width, this.height);
         points.push(new Point(
              this.x - Math.sin(this.angle - alpha) * rad,
@@ -203,7 +204,7 @@ class Car {
     
     #rotateTo(angle) {    
         const eps = 0.2;
-        const flip = 0.2;
+        const flip = 0.05;
         if (abs(this.angle - angle) <= eps) {
             this.angle = angle; 
             return;
@@ -226,9 +227,9 @@ class Car {
         const deltaCoef = deltaTime / 1000;
 
         if (this.controls.userAction) {
-            this.speed += this.acceleration;
+            this.speed += this.acceleration*(this.controls.reverse?-0.5:1);
         } 
-
+        
         this.speed -= this.friction;
 
         this.speed = this.speed > this.maxSpeed 
@@ -275,10 +276,10 @@ class Car {
         const previousPos = { x: this.x, y: this.y };
         const deltaCoef = deltaTime / 1000;
 
-        if (this.controls.forward) {
+        if (this.controls.up) {
             this.speed += this.acceleration;
         }
-        if (this.controls.reverse) {
+        if (this.controls.down) {
             this.speed -= this.acceleration * 0.7;
         }
 
@@ -293,15 +294,15 @@ class Car {
         if (this.speed != 0) {
             const flip = Math.sign(this.speed);
             if (this.controls.left) {
-                this.angle += 0.1*flip;
+                this.angle += 0.02*flip;
             }
             if (this.controls.right) {
-                this.angle -= 0.1*flip;
+                this.angle -= 0.02*flip;
             }
         }
 
-        const mx = Math.sin(this.angle) * this.speed * deltaCoef;
-        const my = Math.cos(this.angle) * this.speed * deltaCoef;
+        const mx = Math.sin(this._angle) * this.speed * deltaCoef;
+        const my = Math.cos(this._angle) * this.speed * deltaCoef;
 
         this.x -= mx;
         this.y -= my;
@@ -347,8 +348,8 @@ class Car {
         this.speed = 0;
         this.damaged = false;
         this.superiorRace = false;
-        this.controls.forward = 0;
-        this.controls.reverse = 0; 
+        this.controls.up = 0;
+        this.controls.down = 0; 
         this.controls.left = 0; 
         this.controls.right = 0;
         this.idiotCounter = 0;

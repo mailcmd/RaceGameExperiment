@@ -5,13 +5,13 @@ function animate(time) {
 
     // main tasks    
     world.update();
-    viewport.setCenter(car.x, car.y);
-    viewport.display();
-    
+    viewport.setCenter(car.x, car.y, car.angle - PI/2);
+    viewport.display();    
+
     if (!paused) {
         requestAnimationFrame(animate);
     } 
-
+    frameCount++;
 }
 
 
