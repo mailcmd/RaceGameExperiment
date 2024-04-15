@@ -38,25 +38,32 @@ class Viewport {
         if (this.mode == ROTATE) {
             width = (width**2 + height**2)**0.5;
             height = width;
-            this.ctx.restore();
+
             this.ctx.clearRect(0,0,this.ctx.canvas.width, this.ctx.canvas.height);        
             this.ctx.save();
-            this.ctx.translate(width/2, height/2);
+            
+            this.ctx.translate(this.ctx.canvas.width/2, this.ctx.canvas.height/2);
             this.ctx.rotate(this.angle);
-            this.ctx.translate(-width/2, -height/2);
-            x0 = -0 ;
-            y0 = -0;
+
+            x0 = - width/2 ;
+            y0 = - height/2;
         } else {
             this.ctx.clearRect(0,0,this.ctx.canvas.width, this.ctx.canvas.height);        
         }       
+
         this.ctx.drawImage(world.canvas, 
             this.x - width/2, this.y - height/2, width, height,
             x0, y0, width, height
         );
-        if (this.showFPS) {
-            this.ctx.font = '14px Courier';
-            this.ctx.strokeText("FPS: "+Math.round(1000/deltaTime), 5, 15);
-        }
+
+        this.ctx.restore();
+        if (this.showFPS) this.displayFPS();
+        
+    }
+    
+    displayFPS() {
+        this.ctx.font = '14px Courier';
+        this.ctx.strokeText("FPS: "+Math.round(1000/deltaTime), 5, 15);        
     }
 
     // display() {

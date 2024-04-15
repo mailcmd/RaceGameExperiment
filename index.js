@@ -10,6 +10,7 @@ const Neuron = synaptic.Neuron,
 const USER_KEYBOARD = 1, USER_JOYSTICK = 2, CPU = 3, DUMMY = 4;
 const STATIC = 1, ROTATE = 2;
  
+const GAMEMODE = STATIC;
 
 // config constants
 const carsCount = 100; 
@@ -53,7 +54,7 @@ viewportCanvas.style.backgroundColor = terrainColor;
 viewportCanvas.style.position = 'fixed';
 viewportCanvas.style.border = '1px solid black';
 viewportCanvas.height = window.innerHeight*0.9;
-viewportCanvas.width = window.innerWidth*0.7;
+viewportCanvas.width = viewportCanvas.height; window.innerWidth*0.7;
 viewportCanvas.style.left = ((window.innerWidth - viewportCanvas.width) / 2) + 'px';
 viewportCanvas.style.top = ((window.innerHeight - viewportCanvas.height) / 2) + 'px';
 const viewportCtx = viewportCanvas.getContext('2d');
@@ -77,6 +78,7 @@ const car = new Car({
     height: 50,
     road: world.road,
     controlType: USER_KEYBOARD,
+    controlMode: GAMEMODE,
     sensorsCount: 31,
 //    model: model
 });
@@ -86,7 +88,7 @@ world.addEntity(car);
 const viewport = new Viewport({
     ctx: viewportCtx,
     world: world,
-    mode: STATIC
+    mode: GAMEMODE
 });
 
 //viewport.setCenter(car.x, car.y);

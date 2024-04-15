@@ -2,6 +2,7 @@ class Car {
     constructor({ 
             x, y, width, height, 
             controlType = CPU, 
+            controlMode = STATIC,
             maxSpeed = maxSpeedCars, 
             color = 'blue', 
             model,
@@ -11,14 +12,16 @@ class Car {
 
         this.x = x;
         this.y = y;
-        this.lastGoodPos = new Point(x, y);
         this.width = width;
         this.height = height;
+        this.controlMode = controlMode;
+        this.controlType = controlType;
         this.sensorsCount = sensorsCount;
         this.color = color;
         this.road = road;
         
         this.maxSpeed = maxSpeed;
+        this.rotateSpeed = maxSpeed / 250;
         this.saveMaxSpeed = maxSpeed;
         this.distance = 0;
         this.idiotCounter = 0;
@@ -28,7 +31,6 @@ class Car {
         this.friction = 15;
         this._angle = 0;
         this.angle = road ? road.roadPoints[0].angleTo(road.roadPoints[1]) : 0;        
-        this.lastGoodPos.angle = this.angle;
         this.damaged = false;
         this.fitness = 0;
         this.score = 0;
@@ -100,8 +102,11 @@ class Car {
                 this.controls.down = outputs[3];                
             } 
             
-            //this.#linearMove();
-            this.#move();
+            if (this.controlMode == STATIC) {
+                this.#arrowMove();
+            } else {
+                this.#linearMove();
+            }
             this.polygon = this.#createPolygon();
             this.damaged = this.#assessDamage();
             if (this.damaged) {
@@ -204,7 +209,8 @@ class Car {
     
     #rotateTo(angle) {    
         const eps = 0.2;
-        const flip = 0.05;
+        const deltaCoef = deltaTime / 1000;
+        const flip = (this.rotateSpeed+1) * deltaCoef;
         if (abs(this.angle - angle) <= eps) {
             this.angle = angle; 
             return;
@@ -222,7 +228,7 @@ class Car {
         }
     }
 
-    #move() {
+    #arrowMove() {
         const previousPos = { x: this.x, y: this.y };
         const deltaCoef = deltaTime / 1000;
 
@@ -292,12 +298,12 @@ class Car {
         this.speed -= Math.sign(this.speed) * this.friction;
 
         if (this.speed != 0) {
-            const flip = Math.sign(this.speed);
+            const flipDir = Math.sign(this.speed);
             if (this.controls.left) {
-                this.angle += 0.02*flip;
+                this.angle += this.rotateSpeed * flipDir * deltaCoef;
             }
             if (this.controls.right) {
-                this.angle -= 0.02*flip;
+                this.angle -= this.rotateSpeed * flipDir * deltaCoef ;
             }
         }
 
