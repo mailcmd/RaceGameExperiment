@@ -19,6 +19,21 @@ class TrackEditor {
         this.#addEventListeners();
     }
 
+    update() {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        for (let i = 0; i < this.points.length; i++) {
+            this.points[i].draw({ 
+                ctx: this.ctx,
+                color: this.points[i] == this.selected ? 'red' : 'black',
+                radius: this.points[i] == this.selected ? 8 : 4
+            });
+            if (i > 0) new Segment(this.points[i-1], this.points[i]).draw({ ctx: this.ctx, width: 1, color: '#555' });
+        }
+        if (this.points.length > 2) {
+            new Segment(this.points[this.points.length-1], this.points[0]).draw({ ctx: this.ctx, width: 1, color: '#555' });
+        }
+    }
+
     addPoint({x, y}) {
         this.points.push( new Point(x, y) );
     }
@@ -35,6 +50,7 @@ class TrackEditor {
         this.canvas.addEventListener('mousemove', this.#handleMouseMove.bind(this));
         this.canvas.addEventListener('mousedown', this.#handleMouseDown.bind(this));
         this.canvas.addEventListener('mouseup', this.#handleMouseUp.bind(this));
+        document.oncontextmenu = function(e){e.preventDefault()};
     }
 
     #handleMouseMove(evt) {
@@ -70,14 +86,7 @@ class TrackEditor {
         if (evt.button == 2) { // right click
         }
         if (evt.button == 0) { // left click
-            if (this.hovered) {
-                this.select(this.hovered);
-                this.dragging = true;
-                return;
-            }
-            this.addPoint(this.mouse);
-            this.select(this.mouse);
-            this.hovered = this.mouse;
+            this.dragging = false;
         }
     }
 

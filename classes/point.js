@@ -4,9 +4,9 @@ class Point {
         this.y = y;
     }
 
-    draw(ctx, color = 'red') {
+    draw({ ctx, color = 'red', radius = 4}) {
         ctx.beginPath();
-        ctx.arc(this.x, this.y, 2, 0, Math.PI*2);
+        ctx.arc(this.x, this.y, radius, 0, Math.PI*2);
         ctx.fillStyle = color;
         ctx.fill()
         return this;

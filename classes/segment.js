@@ -4,12 +4,12 @@ class Segment {
         this.p2 = p2;
     }
 
-    draw(ctx, color = 'red') {
+    draw({ ctx, color = 'red', width = 2 }) {
         ctx.beginPath();
         ctx.moveTo(this.p1.x, this.p1.y);
         ctx.lineTo(this.p2.x, this.p2.y);
         ctx.strokeStyle = color;
-        ctx.lineWidth = 1;
+        ctx.lineWidth = width;
         ctx.stroke();
         return this;
     }

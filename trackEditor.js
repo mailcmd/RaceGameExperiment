@@ -26,25 +26,24 @@ document.onkeypress = e => {
 
 // main settings
 document.body.style.backgroundColor = 'black';
-editorCanvas.style.backgroundColor = terrainColor;
-editorCanvas.style.position = 'fixed';
-editorCanvas.style.border = '1px solid black';
-editorCanvas.height = window.innerHeight*0.9;
-editorCanvas.width = editorCanvas.height; 
-editorCanvas.style.left = ((window.innerWidth - editorCanvas.width) / 2) + 'px';
-editorCanvas.style.top = ((window.innerHeight - editorCanvas.height) / 2) + 'px';
 
-editorCanvas.addEventListener('mousemove', handleMouseMove);
-editorCanvas.addEventListener('mousedown', handleMouseDown);
+const editor = new TrackEditor(editorCanvas);
 
-const editorCtx = editorCanvas.getContext('2d');
+animate();
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 // Main //
 
-//editorCtx.
+function animate() {
+    editor.update();
+    requestAnimationFrame(animate);
+}
+
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 // LIBS //
 
+function getNearestPoint(point, points, thresold = 10) {
+    return points.find( p => p.distanceTo(point) <= thresold );
+}
