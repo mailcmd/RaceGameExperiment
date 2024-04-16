@@ -1,3 +1,6 @@
+// wrappers
+let log = console.log;
+
 const PI = Math.PI;
 const tan = Math.tan;
 const cos = Math.cos;
@@ -9,8 +12,10 @@ const asin = Math.asin;
 const abs = Math.abs;
 const sign = Math.sign;
 
+// extensions
 Number.prototype.deg = function() { return this*180/Math.PI ;}
 
+// functions
 function lerp(a, b, t) {
     return a + (b - a) * t;
 }
@@ -23,22 +28,7 @@ function normalize(n, t) {
     return n / t;
 }
 
-/*
-
-200 -> -160 -> a - 360
-330 -> -30  -> a - 360
-560 -> -160 -> a - 360 -> 200 
-380 -> 20   -> a - 360
-
--200 -> 160 -> 360 + a 
--330 -> 30  -> 360 + a
--560 -> 160 -> 360 + a -> 200 
--380 -> 20   -> a - 360
-
-
-*/
 function standarizeAngle2M(a) {
-//    if (a == 2*PI) a = 0;
     if (a >= -PI && a <= PI) return a;    
     if (a > PI) {
         return standarizeAngle2M(a - 2*PI);
@@ -48,7 +38,6 @@ function standarizeAngle2M(a) {
 }
 
 function standarizeAngle1E(a) {
-//    if (a == 2*PI) a = 0;
     a = standarizeAngle2M(a);
     if (a >= 0) return a;    
     return 2*PI + a;
@@ -82,6 +71,27 @@ function polysIntersect(poly1, poly2) {
         }
     }
     return false;
+}
+
+function getNearestPoint(point, points, thresold = 10) {
+    const nearest = points.slice(0).sort( (a, b) => a.distanceTo(point) - b.distanceTo(point) )[0];
+    return nearest && nearest.distanceTo(point) <= thresold ? nearest : null;
+}
+
+function getNearestSegment(point, segments, thresold = 10) {
+    const distances = segments.map( (seg, i) => { 
+        const seg_angle = Math.min(seg.angle, seg.inverseAngle);
+        const p1 = point.translate(seg_angle + PI / 2, 10000);
+        const p2 = point.translate(seg_angle - PI / 2, 10000);
+        const newPoint = seg.intersectionWith(new Segment(p1, p2));
+        const dist = newPoint ? point.distanceTo(newPoint) : 10000;
+        return newPoint && dist <= thresold ? [ i, dist, newPoint ] : null;
+    } ).filter( d => d != null );
+    if (distances.length) {
+        const nearest = distances.sort( (a,b) => b[1] - a[1] )[0];
+        return [ segments[ nearest[0] ], nearest[2] ];
+    }
+    return [ null, null ]
 }
 
 function getRGBA(value) {

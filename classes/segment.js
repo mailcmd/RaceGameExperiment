@@ -4,13 +4,16 @@ class Segment {
         this.p2 = p2;
     }
 
-    draw({ ctx, color = 'red', width = 2 }) {
+    draw({ ctx, color = 'red', width = 2, lineDash = false }) {
+        ctx.save();
         ctx.beginPath();
         ctx.moveTo(this.p1.x, this.p1.y);
         ctx.lineTo(this.p2.x, this.p2.y);
         ctx.strokeStyle = color;
         ctx.lineWidth = width;
+        ctx.setLineDash([2,0,2]);
         ctx.stroke();
+        ctx.restore();
         return this;
     }
     
@@ -25,6 +28,10 @@ class Segment {
   
     get length() {
         return Point.distance(this.p1, this.p2);
+    }
+    
+    equalTo(s) {
+        return this == s || (this.p1.equalTo(s.p1) && this.p2.equalTo(s.p2)) || (this.p1.equalTo(s.p2) && this.p2.equalTo(s.p1));
     }
     
     intersectionWith(s) {

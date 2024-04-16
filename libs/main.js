@@ -73,8 +73,6 @@ function restoreModel(name = 'model') {
     return JSON.parse(localStorage.getItem(name));
 }
 
-// wrappers
-let log = console.log;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 

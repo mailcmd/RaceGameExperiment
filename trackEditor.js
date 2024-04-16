@@ -1,3 +1,10 @@
+/* TODO
+ - grilla
+ - CTRL-z
+ - guardar
+ -  
+ 
+*/
 
 // DATA CONSTANTS
 
@@ -11,10 +18,13 @@ const roadWidth = 100;
 let roadPoints = [];
 
 // admin actions control
+let paused = false;
 
 document.onkeypress = e => {
     console.log(e.keyCode)
     if (e.keyCode == 32) {
+        (paused = !paused) || animate() ;
+        document.getElementById('paused').style.display = paused ? 'flex' : 'none';        
     } else if (e.keyCode == 13) {
     } else if (e.keyCode == 82 || e.keyCode == 114) {
     } else if (e.keyCode == 100) {
@@ -36,7 +46,10 @@ animate();
 
 function animate() {
     editor.update();
-    requestAnimationFrame(animate);
+
+    if (!paused) {
+        requestAnimationFrame(animate);
+    }
 }
 
 
@@ -44,6 +57,3 @@ function animate() {
 ////////////////////////////////////////////////////////////////////////////////////////////
 // LIBS //
 
-function getNearestPoint(point, points, thresold = 10) {
-    return points.find( p => p.distanceTo(point) <= thresold );
-}
