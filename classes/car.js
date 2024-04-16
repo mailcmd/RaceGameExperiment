@@ -28,7 +28,7 @@ class Car {
         this.speed = 0;
         this.overpassedCars = 0;
         this.acceleration = 45;
-        this.friction = 15;
+        this.friction = 5;
         this._angle = 0;
         this.angle = road ? road.roadPoints[0].angleTo(road.roadPoints[1]) : 0;        
         this.damaged = false;

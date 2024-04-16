@@ -14,7 +14,7 @@ const GAMEMODE = STATIC;
 
 // config constants
 const carsCount = 100; 
-const maxSpeedCars = 500;
+const maxSpeedCars = 600;
 const terrainColor = '#60AF60';
 const roadColor = '#707070';
 const roadSignals = 'white';

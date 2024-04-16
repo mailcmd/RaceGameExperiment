@@ -48,35 +48,3 @@ const editorCtx = editorCanvas.getContext('2d');
 ////////////////////////////////////////////////////////////////////////////////////////////
 // LIBS //
 
-addPoint() {
-    roadPoints()
-}
-
-handleMouseMove(evt) {
-    this.mouse = new Point(evt.offsetX, evt.offsetY);
-    this.hovered = getNearestPoint(this.mouse, this.graph.points, 10);
-    if (this.dragging == true) {
-        this.selected.x = this.mouse.x;
-        this.selected.y = this.mouse.y;
-    }
-}
-
-handleMouseDown(evt) {
-    if (evt.button == 2) { // right click
-        if (this.selected) {
-            this.selected = null;
-         } else if (this.hovered) {
-            this.#removePoint(this.hovered);
-         }
-    }
-    if (evt.button == 0) { // left click
-        if (this.hovered) {
-            this.#select(this.hovered);
-            this.dragging = true;
-            return;
-        }
-        this.graph.addPoint(this.mouse);
-        this.#select(this.mouse);
-        this.hovered = this.mouse;
-    }
-}
