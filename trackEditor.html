@@ -12,11 +12,17 @@
   <body>
     <canvas id="editorCanvas"></canvas>
     <div id="paused"></div>
+    <div id="tool-bar">
+      <button onclick="editor.toggleGrid()" title="Activar/desactivar grilla">&#x25a6;</button>
+      <button onclick="editor.saveToFile(event)" title="Guardar">&#x1F4BE;</button>
+      <button onclick="editor.loadFromFile()" title="Cargar">&#x1F4C1;</button>
+    </div>
 
-    <script src="libs/utils.js"></script>
-    <script src="classes/point.js"></script>
-    <script src="classes/segment.js"></script>
-    <script src="classes/editor.js"></script>
-    <script src="trackEditor.js"></script>
+    <script src="js/libs/utils.js"></script>
+    <script src="js/primitives/point.js"></script>
+    <script src="js/primitives/segment.js"></script>
+    <script src="js/objects/editor.js"></script>
+
+    <script src="js/trackEditor.js" defer></script>
   </body>
 </html>

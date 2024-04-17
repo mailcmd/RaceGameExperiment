@@ -10,6 +10,7 @@ class TrackEditor {
         this.canvas.style.top = ((window.innerHeight - this.canvas.height) / 2) + 'px';
         this.ctx = this.canvas.getContext('2d');
 
+        this.undoSnapshots = [];
         this.points = [];
         this.mouse = null;
         this.pointHovered = null;
@@ -17,12 +18,36 @@ class TrackEditor {
         this.segmentHoveredPoint = null;
         this.dragging = false;
         this.selected = new Point(0, 0);
+        this.currentName = '';
 
         this.#addEventListeners();
     }
 
     update() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        
+        if (this.gridEnabled) {
+            const step = this.canvas.width / gridDensity;
+            this.ctx.save();
+            this.ctx.beginPath();
+            this.ctx.setLineDash([1,1,0]);
+            this.ctx.lineWidth = 0.2;
+            //this.ctx.globalCompositeOperation = 'destination-atop';
+            //this.ctx.globalAlpha = 0.1;
+            this.ctx.strokeStyle = 'rgb(0,0,0, 0.1)';            
+            for (let x = step; x < this.canvas.width; x += step) {
+                this.ctx.moveTo(x, 0);
+                this.ctx.lineTo(x, this.canvas.height);
+                this.ctx.stroke();
+            }
+            for (let y = step; y < this.canvas.height; y += step) {
+                this.ctx.moveTo(0, y);
+                this.ctx.lineTo(this.canvas.width, y);
+                this.ctx.stroke();
+            }
+            this.ctx.restore();            
+        }
+        
         const segments = this.getSegments();
         if (this.points.length == 1) {
             this.points[0].draw({ 
@@ -57,14 +82,28 @@ class TrackEditor {
         }
     }
 
+    addUndoSnapshot() {
+        this.undoSnapshots.push( this.points.slice() );
+        if (this.undoSnapshots.length >= 10) this.undoSnapshots.splice(0, this.undoSnapshots.length-10); 
+    }
+    
+    undo() {
+        if (this.undoSnapshots.length > 0) {
+            this.points = this.undoSnapshots.pop();
+        }
+    }
+    
     addPoint({x, y}) {
+        this.addUndoSnapshot();
         this.points.push( new Point(x, y) );
+        return this.points[this.points.length-1];
     }
 
     insertPoint(point, segment) {
         const segments = this.getSegments();
         for (let i = 0; i < segments.length; i++) {
             if (segment.equalTo(segments[i])) {
+                this.addUndoSnapshot();
                 this.points.splice(i+1, 0, point);
                 return i;
             }
@@ -73,7 +112,8 @@ class TrackEditor {
     }
 
     removePoint(point) {
-        this.points.splice(this.points.findIndex( p => p == point), 1);
+        this.addUndoSnapshot();
+        return this.points.splice(this.points.findIndex( p => p == point), 1);
     }
 
     select(point) {
@@ -91,16 +131,57 @@ class TrackEditor {
         return segments;
     }
 
+    toggleGrid() {
+        this.gridEnabled = !this.gridEnabled;
+    }
+
+    load(data) {
+        if (typeof(data) == 'string') {
+            data = JSON.parse(data);
+        }
+        this.points = data.map( p => new Point(p.x, p.y) );
+        return this.points;
+    }
+    
+    saveToFile(e = {}) {
+        if (!this.currentName || e.ctrlKey) {
+            this.currentName = prompt('Ingrese el nombre', this.currentName);
+        }
+        if (!this.currentName) return;
+        save(this.points, this.currentName + '.json');
+        localStorage.editorFileName = this.currentName;
+    }
+    
+    loadFromFile() {
+        const handle = function(e){
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.addEventListener('load', (ev) => {
+                const result = ev.target.result;
+                if (result) {
+                    this.currentName = file.name.replace('.json', '');
+                    load(result);
+                }
+            });
+            reader.readAsText(file);
+        };
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.addEventListener('change', handle.bind(this));
+        input.click();
+    }
+    
     #addEventListeners() {
         this.canvas.addEventListener('mousemove', this.#handleMouseMove.bind(this));
         this.canvas.addEventListener('mousedown', this.#handleMouseDown.bind(this));
         this.canvas.addEventListener('mouseup', this.#handleMouseUp.bind(this));
+        document.addEventListener('keydown', this.#handleKeyDown.bind(this));
         document.oncontextmenu = function(e){e.preventDefault()};
     }
 
     #handleMouseMove(evt) {
         this.mouse = new Point(evt.offsetX, evt.offsetY);
-        this.pointHovered = getNearestPoint(this.mouse, this.points, 10);
+        this.pointHovered = getNearestPoint(this.mouse, this.points, 15);
         if (!this.dragging && !this.pointHovered)  {
             [ this.segmentHovered, this.segmentHoveredPoint ] = getNearestSegment(this.mouse, this.getSegments(), 20);
         } else {
@@ -114,23 +195,26 @@ class TrackEditor {
 
     #handleMouseDown(evt) {
         if (evt.button == 2) { // right click
-            if (this.selected) {
-                this.selected = null;
-             } else if (this.pointHovered) {
-                this.removePoint(this.pointHovered);
+             if (this.pointHovered) {
+                 this.removePoint(this.pointHovered);
+             } else {
+                 this.selected = null;
              }
         }
         if (evt.button == 0) { // left click
             if (this.pointHovered) {
                 this.select(this.pointHovered);
                 this.dragging = true;
-                return;
             } else if (this.segmentHoveredPoint) {
                 this.insertPoint(this.segmentHoveredPoint, this.segmentHovered); 
                 this.select(this.segmentHoveredPoint);
-                return;
+                this.pointHovered = this.selected;
+                [ this.segmentHovered, this.segmentHoveredPoint ] = [null, null];
+                this.dragging = true;
+            } else {
+                this.select(this.addPoint(this.mouse));
+                this.pointHovered = this.selected;
             }
-            this.addPoint(this.mouse);
         }
     }
 
@@ -141,6 +225,12 @@ class TrackEditor {
             this.dragging = false;
         }
     }
-
+    
+    #handleKeyDown(evt) {
+        if (evt.ctrlKey && evt.key == 'z') {
+            evt.preventDefault();
+            this.undo();
+        }
+    }
 
 }

@@ -39,22 +39,27 @@ body {
     text-shadow: 0px 0px 4px black;
 }
 
-#panel {
+#tool-bar {
+    position: fixed;
+    right: 0;
+    top: 0;
+    background-color: black;
     display: flex;
-    flex-direction: column;
-    justify-content: left;
-    width: 200px;
+    flex-direction: row;
+    justify-content: right;
     padding: 10px;
 }
 
 button {
     border: node;
-    border-radius: 5px;
-    padding: 5px 5px 7px 5px;
+    border-radius: 1px;
+    padding: 5px 8px 7px 8px;
     margin: 2px;
     cursor: pointer;
+    background-color: #e0e0e0;
+    border: 0;
 }
 
 button:hover {
-    background-color: blue;
+    filter: brightness(1.5);
 }

@@ -1,8 +1,9 @@
 /* TODO
- - grilla
- - CTRL-z
- - guardar
- -  
+
+ [√] grilla
+ [√] CTRL-z 
+ [√] guardar
+   
  
 */
 
@@ -13,6 +14,7 @@ const terrainColor = '#60AF60';
 const roadColor = '#707070';
 const roadSignals = 'white';
 const roadWidth = 100;
+const gridDensity = 10;
 
 // global variables
 let roadPoints = [];

@@ -138,9 +138,10 @@ function imagedata2image(imagedata) {
 }
 
 
-(function(console){
+//(function(console){
 
-    console.save = function(data, filename){
+//    console.
+function save(data, filename){
 
         if(!data) {
             console.error('Console.save: No data')
@@ -163,5 +164,5 @@ function imagedata2image(imagedata) {
         e.initMouseEvent('click', true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null)
         a.dispatchEvent(e)
     }
-})(console)
+//})(console)
 
