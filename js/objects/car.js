@@ -66,6 +66,7 @@ class Car {
         }
 
         this.img.src = 'images/car.png';
+        this.repair();
     }
 
     get angle() {

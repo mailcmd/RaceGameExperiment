@@ -6,10 +6,23 @@ class Viewport {
             centerY = 0,
             angle = 0,
             mode = STATIC,
-            showFPS = true
+            showFPS = true,
+            width,
+            height
         }) {
+
+        this.canvas = document.createElement('canvas');
+        this.canvas.style.backgroundColor = terrainColor;
+        this.canvas.style.position = 'fixed';
+        this.canvas.style.border = '1px solid black';
+        this.canvas.height = height;
+        this.canvas.width = width;
+        this.canvas.style.left = ((window.innerWidth - this.canvas.width) / 2) + 'px';
+        this.canvas.style.top = ((window.innerHeight - this.canvas.height) / 2) + 'px';
+        document.body.insertBefore(this.canvas, document.querySelector('#pause'));
+        this.ctx = this.canvas.getContext('2d');        
+
         this.world = world;
-        this.ctx = ctx;
         this.angle = angle;
         this.mode = mode;
         this.showFPS = showFPS;
@@ -30,68 +43,38 @@ class Viewport {
     }
 
     display() {
-        let width = this.ctx.canvas.width;
-        let height = this.ctx.canvas.height;
-        let x0 = 0;
-        let y0 = 0;
 
         if (this.mode == ROTATE) {
-            width = (width**2 + height**2)**0.5;
-            height = width;
+            const width = (this.ctx.canvas.width**2 + this.ctx.canvas.height**2)**0.5;
+            const height = width;
 
             this.ctx.clearRect(0,0,this.ctx.canvas.width, this.ctx.canvas.height);        
+            
             this.ctx.save();
             
             this.ctx.translate(this.ctx.canvas.width/2, this.ctx.canvas.height/2);
             this.ctx.rotate(this.angle);
 
-            x0 = - width/2 ;
-            y0 = - height/2;
+            this.ctx.drawImage(world.canvas, 
+                this.x - width/2, this.y - height/2, width, height,
+                -width/2, -height/2, width, height
+            );
         } else {
             this.ctx.clearRect(0,0,this.ctx.canvas.width, this.ctx.canvas.height);        
+            this.ctx.putImageData(
+                this.world.getImageData(this.x - this.ctx.canvas.width/2, this.y - this.ctx.canvas.height/2, this.ctx.canvas.width, this.ctx.canvas.height), 
+                0, 0
+            );
         }       
 
-        this.ctx.drawImage(world.canvas, 
-            this.x - width/2, this.y - height/2, width, height,
-            x0, y0, width, height
-        );
-
         this.ctx.restore();
-        if (this.showFPS) this.displayFPS();
-        
+
+        if (this.showFPS) this.displayFPS();        
     }
     
     displayFPS() {
         this.ctx.font = '14px Courier';
         this.ctx.strokeText("FPS: "+Math.round(1000/deltaTime), 5, 15);        
     }
-
-    // display() {
-    //     this.ctx.clearRect(0,0,this.ctx.canvas.width, this.ctx.canvas.height);        
-        
-    //     let width = this.ctx.canvas.width;
-    //     let height = this.ctx.canvas.height;
-
-    //     if (this.mode == ROTATE) {
-    //         width = (width**2 + height**2)**0.5;
-    //         height = width;
-    //         this.ctx.restore();
-    //         this.ctx.save();
-    //         this.ctx.translate(this.ctx.canvas.width/2, this.ctx.canvas.height/2);
-    //         this.ctx.rotate(this.angle);
-    //         this.ctx.translate(-this.ctx.canvas.width/2, -this.ctx.canvas.height/2);
-    //     }        
-    //     this.ctx.drawImage(world.canvas, 
-    //         this.x - this.ctx.canvas.width/2, this.y - this.ctx.canvas.height/2, this.ctx.canvas.width, this.ctx.canvas.height,
-    //         //this.x - cutWidth/2, this.y - cutHeight/2, cutWidth, cutHeight,
-    //         0,0, this.ctx.canvas.width, this.ctx.canvas.height
-    //         //0, 0, cutWidth, cutHeight
-    //     );
-    //     if (this.showFPS) {
-    //         this.ctx.font = '14px Courier';
-    //         this.ctx.strokeText("FPS: "+Math.round(1000/deltaTime), 5, 15);
-    //     }
-    // }
-
 
 }

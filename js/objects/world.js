@@ -1,16 +1,19 @@
 class World {
-    constructor({ roadPoints }) {
+    constructor({ 
+        roadPoints,
+        width,
+        height
+        }) {
+
         this.canvas = document.createElement('canvas');
         this.ctx = this.canvas.getContext("2d");
         this.canvas.id = 'worldCanvas';
-        this.canvas.width = window.innerWidth * 5;
-        this.canvas.height = window.innerHeight * 5;                
+        this.canvas.width = width ?? window.innerWidth * 3;
+        this.canvas.height = height ?? this.canvas.width; 
         this.width = this.ctx.canvas.width;
         this.height = this.ctx.canvas.height;
 
-        this.entitiesCanvas = document.createElement('canvas');
-        this.entitiesCtx = this.canvas.getContext("2d");
-        this.entitiesCanvas.id = 'entitiesCanvas';
+//document.body.insertBefore(this.canvas, document.querySelector('#pause'));
 
         this.bgImage = null;
         

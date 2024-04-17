@@ -1,5 +1,5 @@
 class TrackEditor {
-    constructor(canvas) {
+    constructor(canvas, { hidden = false } = {}) {
         this.canvas = canvas;
         this.canvas.style.backgroundColor = terrainColor;
         this.canvas.style.position = 'fixed';
@@ -19,8 +19,10 @@ class TrackEditor {
         this.dragging = false;
         this.selected = new Point(0, 0);
         this.currentName = '';
-
-        this.#addEventListeners();
+        
+        if (!hidden) {
+            this.#addEventListeners();
+        }
     }
 
     update() {
@@ -135,12 +137,30 @@ class TrackEditor {
         this.gridEnabled = !this.gridEnabled;
     }
 
-    load(data) {
+    getNormalized() {
+        return this.points.map( p => new Point(p.x / this.canvas.width, p.y / this.canvas.height) );
+    }
+    
+    getUnnormalized(width, height) {
+        const w = width ?? this.canvas.width;
+        const h = height ?? (width ?? this.canvas.height);        
+        return this.points.map( p => new Point(Math.ceil(p.x * w), Math.ceil(p.y * h)) );
+    }
+    
+    getScalated(width, height = width) {
+        const w = width / this.canvas.width;
+        const h = height / this.canvas.height;        
+        return this.points.map( p => new Point(Math.ceil(p.x * w), Math.ceil(p.y * h)) );        
+    }
+    
+    load(data, normalized = false) {
         if (typeof(data) == 'string') {
             data = JSON.parse(data);
         }
         this.points = data.map( p => new Point(p.x, p.y) );
-        return this.points;
+        if (normalized) {
+            this.points = this.getUnnormalized();
+        }
     }
     
     saveToFile(e = {}) {
@@ -148,11 +168,11 @@ class TrackEditor {
             this.currentName = prompt('Ingrese el nombre', this.currentName);
         }
         if (!this.currentName) return;
-        save(this.points, this.currentName + '.json');
+        save(this.getNormalized(), this.currentName + '.json');
         localStorage.editorFileName = this.currentName;
     }
     
-    loadFromFile() {
+    loadFromFile(callback = ()=>{}) {
         const handle = function(e){
             const file = e.target.files[0];
             const reader = new FileReader();
@@ -160,7 +180,8 @@ class TrackEditor {
                 const result = ev.target.result;
                 if (result) {
                     this.currentName = file.name.replace('.json', '');
-                    load(result);
+                    this.load(result, true);
+                    callback(this);
                 }
             });
             reader.readAsText(file);

@@ -42,13 +42,11 @@ class Segment {
         return new Point( (this.p1.x + this.p2.x) / 2, (this.p1.y + this.p2.y) / 2 );
     }
     
-    static addCurve(s1, s2, { granularity = 10, amplitude = 30 } = {}) {
+    static addCurve(s1, s2, { granularity = 6, amplitude = 20 } = {}) {
         while (s1.length < amplitude || s2.length < amplitude) {
             amplitude /= 2;            
         }         
 
-//s1.draw(raceCtx);
-//s2.draw(raceCtx);
         const a1 = s1.inverseAngle; 
         const a2 = s2.angle; 
         const pIntersect = Segment.getIntersection(s1, s2);
@@ -57,14 +55,12 @@ class Segment {
         const p1 = pIntersect.translate(a1, amplitude);
         const p2 = pIntersect.translate(a2, amplitude);
 
-//pIntersect.draw(raceCtx, 'white')
-
         const p1a = standarizeAngle2M(s1.angle + PI/2);
         const p2a = standarizeAngle2M(s2.angle + PI/2);
         
         const center = Segment.getIntersection( (new Segment(p1.translate(p1a, -100000), p1.translate(p1a, 100000))), (new Segment(p2.translate(p2a, -100000), p2.translate(p2a, 100000))) );
         const radius = p1.distanceTo(center);
-//center.draw(raceCtx, 'green')
+
         let c1 = standarizeAngle1E(center.angleTo(p1));
         let c2 = standarizeAngle1E(center.angleTo(p2));        
         
@@ -74,13 +70,12 @@ class Segment {
         } else {
             step = (standarizeAngle2M(c2 - c1)) / (granularity);                
         }
-//log(c1.deg(), c2.deg())
+
         let c = c1 + step;
 
         const newPoints = [ p1 ];                 
         for (let i = 0; i < granularity-1; i++) {            
             newPoints.push( center.translate(c, radius) );
-//newPoints[newPoints.length-1].draw(raceCtx, 'blue')
             c += step;
         }
         newPoints.push( p2 );

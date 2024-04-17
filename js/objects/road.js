@@ -79,9 +79,8 @@ class Road {
             const prevSeg = i == 0 ? rightSegments[rightSegments.length-1] : rightSegments[i-1];
             const curSeg = rightSegments[i];
             const nextSeg = i == rightSegments.length-1 ? rightSegments[0] : rightSegments[i+1];
-
-            const p1 = Segment.getIntersection( curSeg, prevSeg);//.draw(raceCtx, 'white');
-            const p2 = Segment.getIntersection( curSeg, nextSeg);//.draw(raceCtx, 'red');
+            const p1 = Segment.getIntersection( curSeg, prevSeg); //.draw({ ctx: this.world.ctx, color: 'white' });
+            const p2 = Segment.getIntersection( curSeg, nextSeg); //.draw({ ctx: this.world.ctx, color : 'red' });
             this.rightSegments.push((new Segment(p1, p2)));
         }
         
@@ -98,9 +97,6 @@ class Road {
     }
 
     draw() {
-        
-new Point(0,0).draw(this.world.ctx)
-        
         this.world.ctx.beginPath();
         this.world.ctx.moveTo(this.leftSegments[0].p1.x, this.leftSegments[0].p1.y);
         for (let i = 0; i < this.leftSegments.length-1; i++) {
@@ -128,17 +124,18 @@ new Point(0,0).draw(this.world.ctx)
         this.world.ctx.lineTo(this.rightSegments[0].p1.x, this.rightSegments[0].p1.y);
 
         this.world.ctx.closePath();
+
+
         this.world.ctx.save();
         this.world.ctx.globalCompositeOperation = 'destination-out';
         this.world.ctx.fill();
         this.world.ctx.restore();
-
         this.world.ctx.strokeStyle = roadColor;
         this.world.ctx.lineWidth = 14;
         this.world.ctx.stroke();
         this.world.ctx.strokeStyle = roadSignals;
         this.world.ctx.lineWidth = 6;
-        this.world.ctx.stroke();
-        
+        this.world.ctx.stroke();        
+
     }
 }

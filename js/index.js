@@ -10,7 +10,7 @@ const Neuron = synaptic.Neuron,
 const USER_KEYBOARD = 1, USER_JOYSTICK = 2, CPU = 3, DUMMY = 4;
 const STATIC = 1, ROTATE = 2;
  
-const GAMEMODE = STATIC;
+const GAMEMODE = ROTATE;
 
 // config constants
 const carsCount = 100; 
@@ -24,7 +24,6 @@ const roadWidth = 100;
 let frameCount = 0;
 let frameTime = 0;
 let deltaTime = 0;
-let resetTimeOut = -1;
 
 // admin actions control
 let paused = false, refreshCanvas = true, resetGameNow = false;
@@ -50,60 +49,59 @@ document.onkeypress = e => {
 
 // main settings
 //document.body.style.backgroundColor = terrainColor;
-viewportCanvas.style.backgroundColor = terrainColor;
-viewportCanvas.style.position = 'fixed';
-viewportCanvas.style.border = '1px solid black';
-viewportCanvas.height = window.innerHeight*0.9;
-viewportCanvas.width = viewportCanvas.height; window.innerWidth*0.7;
-viewportCanvas.style.left = ((window.innerWidth - viewportCanvas.width) / 2) + 'px';
-viewportCanvas.style.top = ((window.innerHeight - viewportCanvas.height) / 2) + 'px';
-const viewportCtx = viewportCanvas.getContext('2d');
 
-// road declaration
-const roadPoints = [
+const editor = new TrackEditor(document.createElement('canvas'), { hidden: true });
+
+var world, viewport, roadPoints, car;
+
+editor.loadFromFile(function(editor){
+
+    roadPoints = [
+        new Point(100, 200),
+        new Point(2305, 150),
+        new Point(2240, 550),
+        new Point(120, 640),
+        new Point(200, 440)
+    ];
+    
+    roadPoints = editor.getScalated(window.innerWidth * 3);
+    
+    //create world
+    world = new World({ 
+        roadPoints: roadPoints,
+        width: window.innerWidth * 3
+    });
+
+    car = new Car({
+        x: roadPoints[0].x,
+        y: roadPoints[0].y,    
+        width: 30,
+        height: 50,
+        road: world.road,
+        controlType: USER_KEYBOARD,
+        controlMode: GAMEMODE,
+        sensorsCount: 31,
+        // model: model
+    });
+    world.addEntity(car);
+
+    viewport = new Viewport({
+        world: world,
+        width: window.innerWidth,
+        height: window.innerHeight,
+        mode: GAMEMODE
+    });
+
+    // init main loop
+    animate(1);
+});
+
+/*
+[
     new Point(100, 200),
     new Point(2305, 150),
     new Point(2240, 550),
     new Point(120, 640),
     new Point(200, 440)
 ];
-
-//create world
-const world = new World({ roadPoints, viewportCtx });
-
-const car = new Car({
-    x: roadPoints[0].x,
-    y: roadPoints[0].y,    
-    width: 30,
-    height: 50,
-    road: world.road,
-    controlType: USER_KEYBOARD,
-    controlMode: GAMEMODE,
-    sensorsCount: 31,
-//    model: model
-});
-
-world.addEntity(car);
-
-const viewport = new Viewport({
-    ctx: viewportCtx,
-    world: world,
-    mode: GAMEMODE
-});
-
-//viewport.setCenter(car.x, car.y);
-
-// init main loop
-animate(1);
-
-
-// cars declaration and init
-// let you, cars;
-// try {
-//     const model = restoreModel();
-//     cars = generateCars(carsCount, model,  controlType);
-//     animate(1);
-// } catch(e) {
-//     cars = generateCars(carsCount, null, controlType);
-//     animate(1);
-// };
+*/
