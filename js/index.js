@@ -10,7 +10,7 @@ const Neuron = synaptic.Neuron,
 const USER_KEYBOARD = 1, USER_JOYSTICK = 2, CPU = 3, DUMMY = 4;
 const STATIC = 1, ROTATE = 2;
  
-const GAMEMODE = ROTATE;
+const GAMEMODE = STATIC;
 
 // config constants
 const carsCount = 100; 
@@ -18,7 +18,7 @@ const maxSpeedCars = 600;
 const terrainColor = '#60AF60';
 const roadColor = '#707070';
 const roadSignals = 'white';
-const roadWidth = 100;
+const roadWidth = 150;
 
 // global variables
 let frameCount = 0;
@@ -52,7 +52,7 @@ document.onkeypress = e => {
 
 const editor = new TrackEditor(document.createElement('canvas'), { hidden: true });
 
-var world, viewport, roadPoints, car;
+var world, viewport, roadPoints, car, road;
 
 editor.loadFromFile(function(editor){
 
@@ -72,18 +72,23 @@ editor.loadFromFile(function(editor){
         width: window.innerWidth * 3
     });
 
+    road = new Road({ roadPoints, roadWidth });
+    world.addStaticEntity(road);
+    
+    world.renderizeStatic();
+
     car = new Car({
         x: roadPoints[0].x,
         y: roadPoints[0].y,    
         width: 30,
         height: 50,
-        road: world.road,
+        road: road,
         controlType: USER_KEYBOARD,
         controlMode: GAMEMODE,
         sensorsCount: 31,
         // model: model
     });
-    world.addEntity(car);
+    world.addDynamicEntity(car);
 
     viewport = new Viewport({
         world: world,
@@ -94,6 +99,7 @@ editor.loadFromFile(function(editor){
 
     // init main loop
     animate(1);
+
 });
 
 /*

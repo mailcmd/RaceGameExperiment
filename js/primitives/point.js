@@ -19,6 +19,11 @@ class Point {
         ctx.restore();
         return this;
     }
+    
+    get angle() {
+        return Point.getAngle(this, new Point(0,0));
+    }
+    
     angleTo(p) {
         return Point.getAngle(this, p);
     }
@@ -27,6 +32,12 @@ class Point {
     }
     equalTo(p) {        
         return this == p || (this.x == p.x && this.y == p.y);
+    }
+    subtract(p) {
+        return Point.subtract(this, p);
+    }
+    average(p) {
+        return Point.average(this, p);
     }
 
     project(length, angle) {
@@ -48,4 +59,13 @@ class Point {
     static distance(p1, p2) {
         return ((p2.y-p1.y)**2 + (p2.x-p1.x)**2)**(0.5);
     } 
+    
+    static subtract(p1, p2) {
+        return new Point(p1.x - p2.x, p1.y - p2.y);
+    }
+    
+    static average(p1, p2) {
+        return new Point((p1.x + p2.x) / 2, (p1.y + p2.y) / 2);
+    }
+
 }

@@ -1,8 +1,7 @@
 class World {
     constructor({ 
-        roadPoints,
-        width,
-        height
+            width,
+            height
         }) {
 
         this.canvas = document.createElement('canvas');
@@ -17,26 +16,29 @@ class World {
 
         this.bgImage = null;
         
-        this.entities = [];
+        this.staticEntities = [];
+        this.dynamicEntities = [];
 
-        this.road = new Road(this, {
-            roadPoints: roadPoints,
-            roadWidth: roadWidth
-        });
-        
-        this.#renderizeBG();
     }        
+    
+    renderizeStatic() {
+        this.#renderizeBG();
+    }
 
-    addEntity(entity) {
-        this.entities.push(entity);        
+    addDynamicEntity(entity) {
+        this.dynamicEntities.push(entity);        
+    }
+
+    addStaticEntity(entity) {
+        this.staticEntities.push(entity);        
     }
     
     update() {
         this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
         this.ctx.drawImage(this.bgImage, 0, 0);
-        for (let i = 0; i < this.entities.length; i++) {
-            this.entities[i].update();
-            this.entities[i].draw({ ctx: this.ctx });
+        for (let i = 0; i < this.dynamicEntities.length; i++) {
+            this.dynamicEntities[i].update();
+            this.dynamicEntities[i].draw({ ctx: this.ctx });
         }
     }
     
@@ -45,7 +47,7 @@ class World {
     }
 
     #renderizeBG() {
-        this.road.draw();
+        this.staticEntities.forEach( e => e.draw({ctx: this.ctx}) );
         this.bgImage = imagedata2image(this.ctx.getImageData(0, 0, this.width, this.height));
     }
 }

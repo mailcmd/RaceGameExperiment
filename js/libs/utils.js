@@ -11,6 +11,8 @@ const acos = Math.acos;
 const asin = Math.asin;
 const abs = Math.abs;
 const sign = Math.sign;
+const max = Math.max;
+const min = Math.min;
 
 // extensions
 Number.prototype.deg = function() { return this*180/Math.PI ;}

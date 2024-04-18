@@ -30,7 +30,7 @@ class Car {
         this.acceleration = 45;
         this.friction = 5;
         this._angle = 0;
-        this.angle = road ? road.roadPoints[0].angleTo(road.roadPoints[1]) : 0;        
+        this.angle = road ? road.points[0].angleTo(road.points[1]) : 0;        
         this.damaged = false;
         this.fitness = 0;
         this.score = 0;
@@ -129,11 +129,11 @@ class Car {
     repair() {
         let nearest = null;
         const carPos = new Point(this.x, this.y);
-        const minDistance = Math.min(...this.road.roadPoints.map( a => carPos.distanceTo(new Point(a.x, a.y)) ));
-        const idx = this.road.roadPoints.findIndex( a => carPos.distanceTo(new Point(a.x, a.y)) == minDistance );
-        this.x = this.road.roadPoints[idx].x;
-        this.y = this.road.roadPoints[idx].y; 
-        this.angle = this.road.roadPoints[idx].angleTo( this.road.roadPoints[idx == this.road.roadPoints.length-1 ? 0 : idx+1 ] );
+        const minDistance = Math.min(...this.road.points.map( a => carPos.distanceTo(new Point(a.x, a.y)) ));
+        const idx = this.road.points.findIndex( a => carPos.distanceTo(new Point(a.x, a.y)) == minDistance );
+        this.x = this.road.points[idx].x;
+        this.y = this.road.points[idx].y; 
+        this.angle = this.road.points[idx].angleTo( this.road.points[idx == this.road.points.length-1 ? 0 : idx+1 ] );
         this.damaged = false;
         this.speed = 0;
     }
@@ -163,12 +163,13 @@ class Car {
 
     #assessDamage() {
         if (this.road) {
-            if (polysIntersect(this.polygon, this.road.leftSegments)) {
+            if (polysIntersect(this.polygon, this.road.insidePoly.segments)) {
                 return true;
-            }            
-            if (polysIntersect(this.polygon, this.road.rightSegments)) {
+            }                        
+            if (polysIntersect(this.polygon, this.road.outsidePoly.segments)) {
                 return true;
-            }            
+            } 
+            
         }
         /*
         for (let i = 0; i < traffic.length; i++) {

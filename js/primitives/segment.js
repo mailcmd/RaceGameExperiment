@@ -11,7 +11,7 @@ class Segment {
         ctx.lineTo(this.p2.x, this.p2.y);
         ctx.strokeStyle = color;
         ctx.lineWidth = width;
-        ctx.setLineDash([2,0,2]);
+        if (lineDash) ctx.setLineDash(lineDash);
         ctx.stroke();
         ctx.restore();
         return this;
@@ -41,7 +41,20 @@ class Segment {
     midpoint() {
         return new Point( (this.p1.x + this.p2.x) / 2, (this.p1.y + this.p2.y) / 2 );
     }
+
+    slope() {
+        return (this.p2.y - this.p1.y) / (this.p2.x - this.p1.x);
+    }
     
+    angleWidth(s, minimize = false) {
+        const a1 = standarizeAngle1E(this.angle);
+        const a2 = standarizeAngle1E(s.angle);
+        const angle = standarizeAngle1E(max(a1, a2) - min(a1, a2));
+        return minimize  
+            ? (angle > PI ? 2*PI - angle : angle)
+            : angle;
+    }
+
     static addCurve(s1, s2, { granularity = 6, amplitude = 20 } = {}) {
         while (s1.length < amplitude || s2.length < amplitude) {
             amplitude /= 2;            
