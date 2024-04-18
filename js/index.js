@@ -10,7 +10,7 @@ const Neuron = synaptic.Neuron,
 const USER_KEYBOARD = 1, USER_JOYSTICK = 2, CPU = 3, DUMMY = 4;
 const STATIC = 1, ROTATE = 2;
  
-const GAMEMODE = STATIC;
+const GAMEMODE = ROTATE;
 
 // config constants
 const carsCount = 100; 
@@ -64,12 +64,12 @@ editor.loadFromFile(function(editor){
         new Point(200, 440)
     ];
     
-    roadPoints = editor.getScalated(window.innerWidth * 3);
+    roadPoints = editor.getScalated(window.innerWidth * 2);
     
     //create world
     world = new World({ 
         roadPoints: roadPoints,
-        width: window.innerWidth * 3
+        width: window.innerWidth * 2
     });
 
     road = new Road({ roadPoints, roadWidth });
