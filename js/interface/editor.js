@@ -64,7 +64,7 @@ class TrackEditor {
                 ctx: this.ctx, 
                 width: 1, 
                 color: this.segmentHovered && segments[i].equalTo(this.segmentHovered) ? '#c80000' : '#555', 
-                lineDash: true 
+                lineDash: [ 3, 0, 3 ]
             });
             segments[i].p1.draw({ 
                 ctx: this.ctx,

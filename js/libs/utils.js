@@ -16,6 +16,7 @@ const min = Math.min;
 
 // extensions
 Number.prototype.deg = function() { return this*180/Math.PI ;}
+Number.prototype.rad = function() { return this*Math.PI/180 ;}
 
 // functions
 function lerp(a, b, t) {

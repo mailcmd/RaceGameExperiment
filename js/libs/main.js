@@ -1,19 +1,3 @@
-// main functions
-function animate(time) {
-    deltaTime = Math.min(time - frameTime, 300);
-    frameTime = time;
-
-    // main tasks    
-    world.update();
-    viewport.setCenter(car.x, car.y, car.angle - PI/2);
-    viewport.display();    
-
-    if (!paused) {
-        requestAnimationFrame(animate);
-    } 
-    frameCount++;
-}
-
 
 function generateCars(N, model, controlType = 'AI') {
     const cars = [];    

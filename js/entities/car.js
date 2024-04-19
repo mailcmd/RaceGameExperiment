@@ -223,7 +223,8 @@ class Car {
             } else {
                 this.angle -= flip; 
             }
-        } else if (angle > this.angle && abs(angle - this.angle) < PI) {
+        //} else if (angle > this.angle && abs(angle - this.angle) < PI) {
+        } else if (standarizeAngle1E(angle + 2*PI - this.angle) < PI) {
             this.angle += flip; 
         } else {
             this.angle -= flip; 
@@ -234,7 +235,7 @@ class Car {
         const previousPos = { x: this.x, y: this.y };
         const deltaCoef = deltaTime / 1000;
 
-        if (this.controls.userAction) {
+        if (this.controls.forward || this.controls.reverse) {
             this.speed += this.acceleration*(this.controls.reverse?-0.5:1);
         } 
         
