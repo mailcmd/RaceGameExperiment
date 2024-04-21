@@ -1,5 +1,6 @@
 // wrappers
-let log = console.log;
+const log = console.log;
+const warn = console.warn;
 
 const PI = Math.PI;
 const tan = Math.tan;
