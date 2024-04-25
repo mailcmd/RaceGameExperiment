@@ -1,3 +1,7 @@
+function togglePause() {
+    (paused = !paused) ? menu.show() : (menu.hide(), animate(frameTime)) ;
+    document.getElementById('paused').style.display = paused ? 'flex' : 'none';
+}
 
 function generateCars(N, model, controlType = 'AI') {
     const cars = [];    

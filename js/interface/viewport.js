@@ -28,6 +28,10 @@ class Viewport {
         this.showFPS = showFPS;
         this.setCenter(centerX, centerY, angle);
     }
+    
+    setMode(mode) {
+        this.mode = mode;
+    }
 
     rotate(angle) {
         this.angle = angle;

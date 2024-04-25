@@ -1,39 +1,10 @@
 
-// Synaptic
-const Neuron = synaptic.Neuron,
-	Layer = synaptic.Layer,
-	Network = synaptic.Network,
-	Trainer = synaptic.Trainer,
-	Architect = synaptic.Architect;
-
-// DATA CONSTANTS
-const USER_KEYBOARD = 1, USER_JOYSTICK = 2, CPU = 3, DUMMY = 4;
-const STATIC = 1, ROTATE = 2;
-//const TOP_LEFT = 1, TOP_RIGHT = 2, BOTTOM_RIGHT = 3, BOTTOM_LEFT = 4;
- 
-const GAMEMODE = STATIC;
-
-// config constants
-const carsCount = 100; 
-const maxSpeedCars = 500;
-const terrainColor = '#60AF60';
-const roadColor = '#707070';
-const roadSignals = 'white';
-const roadWidth = 150;
-
-// global variables
-let frameCount = 0;
-let frameTime = 0;
-let deltaTime = 0;
-
-// admin actions control
-let paused = false, refreshCanvas = true, resetGameNow = false;
-
 document.onkeypress = e => {
     console.log(e.keyCode)
     if (e.keyCode == 32) {
-        (paused = !paused) || animate(frameTime) ;
-        document.getElementById('paused').style.display = paused ? 'flex' : 'none';
+        //(paused = !paused) || animate(frameTime) ;
+        //document.getElementById('paused').style.display = paused ? 'flex' : 'none';
+        togglePause();
     } else if (e.keyCode == 13) {
     } else if (e.keyCode == 82 || e.keyCode == 114) {
         resetGameNow = true;
@@ -48,12 +19,8 @@ document.onkeypress = e => {
     }
 };
 
-// main settings
-//document.body.style.backgroundColor = terrainColor;
-
 const editor = new TrackEditor(document.createElement('canvas'), { hidden: true });
-
-var world, viewport, minimap, roadPoints, car, road;
+const menu = new Menu(menuData, {open: false});
 
 // main functions
 function animate(time) {
@@ -65,7 +32,7 @@ function animate(time) {
     viewport.setCenter(car.x, car.y, car.angle - PI/2);
     viewport.display();
 
-    minimap.update();
+    if (showMinimap) minimap.update();
 
     if (!paused) {
         requestAnimationFrame(animate);
@@ -74,7 +41,7 @@ function animate(time) {
 }
 
 //editor.loadFromFile(function(editor){
-(async function(){
+(async function(){    
     
     editor.load(await fetchdata('data/circle.json'), true);
     roadPoints = editor.getScalated(window.innerWidth * 2);    
@@ -97,7 +64,7 @@ function animate(time) {
         height: 50,
         road: road,
         controlType: USER_KEYBOARD,
-        controlMode: GAMEMODE,
+        controlMode: DEFAULT_GAMEMODE,
         sensorsCount: 31,
         // model: model
     });
@@ -107,11 +74,12 @@ function animate(time) {
         world: world,
         width: window.innerWidth,
         height: window.innerHeight,
-        mode: GAMEMODE
+        mode: DEFAULT_GAMEMODE
     });
 
     minimap = new Minimap({
-        world: world
+        world: world,
+        visible: showMinimap
     });
 
     // init main loop

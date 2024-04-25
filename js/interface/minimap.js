@@ -3,7 +3,8 @@ class Minimap {
         world,
         width,
         height,
-        position = 'BOTTOM_RIGHT'
+        position = 'BOTTOM_RIGHT',
+        visible = true
     }) {
     
         this.world = world;
@@ -18,9 +19,10 @@ class Minimap {
         this.canvas.height = this.height;
         this.canvas.style.border = '1px solid black';
         this.canvas.style.boxShadow = 'rgb(0, 61, 20) 0px 0px 5px';
-        this.canvas.style.backgroundColor = 'black'; //terrainColor;        
+        this.canvas.style.backgroundColor = terrainColor;        
         this.canvas.style.position = 'fixed';
         this.canvas.style.zIndex = '1';
+        this.canvas.style.display = visible ? 'block' : 'none';
         this.position.split(/[ ,_]+/).map( p => p.toLowerCase() ).forEach( p => this.canvas.style[p] = '6px' ); 
         
         this.ctx.globalCompositeOperation = '';
@@ -29,6 +31,14 @@ class Minimap {
         
         document.body.appendChild(this.canvas);                
     }
+
+    show() {
+        this.canvas.style.display = 'block';
+    }   
+     
+    hide() {
+        this.canvas.style.display = 'none';
+    }    
     
     update() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);

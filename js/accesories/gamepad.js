@@ -116,7 +116,7 @@ class GamepadsController {
         }
         log('Controller found at index ' + e.gamepad.index + '.');
         log(this.gamepads[e.gamepad.index].id + ' is ready!');
-        this.update();
+        if (this.getGamepads().length == 1) this.update();
     }
 
     #lostGamepad(e) {

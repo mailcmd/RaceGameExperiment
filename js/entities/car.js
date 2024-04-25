@@ -76,6 +76,10 @@ class Car {
         this._angle = standarizeAngle1E(a - PI / 2);
     }
     
+    setMode(mode) {
+        this.controlMode = mode;
+    }    
+    
     update() {
         //if (this.idiotCounter >= 60 * 3) {
         //    this.damaged = true;
