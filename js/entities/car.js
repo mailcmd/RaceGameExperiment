@@ -176,11 +176,11 @@ class Car {
     }
 
     #gamepaddAxisHandler(gp) {
-        if ((gp.event == 'hold' || gp.event == 'change') && gp.event == 'left') {
+        if ((gp.event == 'hold' || gp.event == 'change') && gp.id == 'left') {
             if (this.speed > 0) {        
                 this.rotateTo(gp.rad);
             }
-        }
+        } 
     }
     #gamepaddButtonsHandler(gp) {
         if (gp.index == 1) {

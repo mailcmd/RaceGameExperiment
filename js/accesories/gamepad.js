@@ -10,17 +10,18 @@ class GamepadsController {
     update() {
         for (let i = 0; i < this.gamepads.length; i ++) {
             const gp = this.gamepads[i];
-
             for (let j = 0; j < gp.buttons.length; j++) {
                 if (gp.buttons[j].pressed == gp.status.buttons[j].pressed) continue;
-                gp.status.buttons[j].pressed = gp.buttons[j].pressed;
+                gp.status.buttons[j].pressed = gp.buttons[j].pressed;                
                 if (gp.buttons[j].pressed) {
+                    if (!this.gamepadsHandlers[i]?.pressButton) continue;
                     this.gamepadsHandlers[i].pressButton({
                         event: 'press',
                         index: j,
                         value: gp.buttons[j].value
                     });
                 } else {
+                    if (!this.gamepadsHandlers[i]?.releaseButton) continue;
                     this.gamepadsHandlers[i].releaseButton({
                         event: 'release',
                         index: j,
@@ -28,24 +29,33 @@ class GamepadsController {
                     });
                 }
             }
+
             // left Stick
             const leftStick = this.decodeAxis(gp.axes[0], gp.axes[1]);
             if (isNaN(leftStick.rad) && !isNaN(gp.status.leftStick.rad)) {
+                if (!this.gamepadsHandlers[i]?.centerAxis) continue;
                 this.gamepadsHandlers[i].centerAxis({ event: 'center', id: 'left', ...leftStick });
             } else if (!isNaN(leftStick.rad) && leftStick.rad != gp.status.leftStick.rad) {
+                if (!this.gamepadsHandlers[i]?.changeAxis) continue;
                 this.gamepadsHandlers[i].changeAxis({ event: 'change', id: 'left', ...leftStick });
             } else if (!isNaN(leftStick.rad)) {
+                if (!this.gamepadsHandlers[i]?.holdAxis) continue;
                 this.gamepadsHandlers[i].holdAxis({ event: 'hold', id: 'left', ...leftStick });
             }
             gp.status.leftStick.rad = leftStick.rad;
 
             // right Stick
-            const rightStick = this.decodeAxis(gp.axes[2], gp.axes[5]);
+            const rightStick = this.decodeAxis(
+                ...(gp.axes.length == 4 ? [ gp.axes[2], gp.axes[3] ] : [ gp.axes[2], gp.axes[5] ])
+            );
             if (isNaN(rightStick.rad) && !isNaN(gp.status.rightStick.rad)) {
+                if (!this.gamepadsHandlers[i]?.centerAxis) continue;
                 this.gamepadsHandlers[i].centerAxis({ event: 'center', id: 'right', ...rightStick });
             } else if (!isNaN(rightStick.rad) && rightStick.rad != gp.status.rightStick.rad) {
+                if (!this.gamepadsHandlers[i]?.changeAxis) continue;
                 this.gamepadsHandlers[i].changeAxis({ event: 'change', id: 'right', ...rightStick });
             } else if (!isNaN(rightStick.rad)) {
+                if (!this.gamepadsHandlers[i]?.holdAxis) continue;
                 this.gamepadsHandlers[i].holdAxis({ event: 'hold', id: 'right', ...rightStick });
             }
             gp.status.rightStick.rad = rightStick.rad;            
