@@ -1,43 +1,108 @@
-class Controls {
-    constructor(type, car) {
-        this.car = car;
+/*
+ arrows:
+    - 🡹 : up
+    - 🡻 : down
+    - 🡸 : left
+    - 🡺 : right
+    - button 1 : g
+    - button 2 : f
 
-        this.forward = 0;
-        this.reverse = 0; 
-        this.left = 0; 
-        this.right = 0; 
-        this.up = 0; 
-        this.down = 0; 
-        this.userAction = false;
-        
-        switch (type) {
-            case USER_KEYBOARD:
-                this.#addKeyboardListeners();
-                break;
-            case DUMMY:
-                this.forward = 1;
-                break;
-        }
+ wasd:
+    - 🡹 : w
+    - 🡻 : s
+    - 🡸 : a
+    - 🡺 : d
+    - button 1 : o
+    - button 2 : p
+
+*/
+class Keyboard {
+    constructor($type = 'arrows', handler) {
+        this.#addKeyboardListeners($type, handler);
     }
 
-    #addKeyboardListeners() {
+    #addKeyboardListeners($type, handler) {
         document.onkeydown = (e) => {
-            if (e.key == 'ArrowLeft') this.left = 1;
-            if (e.key == 'ArrowRight') this.right = 1;
-            if (e.key == 'ArrowUp') this.up = 1;
-            if (e.key == 'ArrowDown') this.down = 1;
-            if (e.key == 'd') this.forward = 1;
-            if (e.key == 's') this.reverse = 1;
-            this.userAction = this.left || this.right || this.down || this.up || this.reverse || this.forward;
+            if ($type == 'arrows') {
+                if (e.key == 'ArrowLeft') { 
+                    handler({event: 'press', action: 'left'});
+                }
+                if (e.key == 'ArrowRight') {
+                    handler({event: 'press', action: 'right'});
+                }
+                if (e.key == 'ArrowUp') {
+                    handler({event: 'press', action: 'up'});
+                }
+                if (e.key == 'ArrowDown') {
+                    handler({event: 'press', action: 'down'});
+                }
+                if (e.key == 'g') {
+                    handler({event: 'press', action: 'button1'});
+                }
+                if (e.key == 'f') {
+                    handler({event: 'press', action: 'button2'});
+                }
+            } else if ($type == 'wasd') {
+                if (e.key == 'a') { 
+                    handler({event: 'press', action: 'left'});
+                }
+                if (e.key == 'd') {
+                    handler({event: 'press', action: 'right'});
+                }
+                if (e.key == 'w') {
+                    handler({event: 'press', action: 'up'});
+                }
+                if (e.key == 's') {
+                    handler({event: 'press', action: 'down'});
+                }
+                if (e.key == 'o') {
+                    handler({event: 'press', action: 'button1'});
+                }
+                if (e.key == 'p') {
+                    handler({event: 'press', action: 'button2'});
+                }
+            }
         };
         document.onkeyup = (e) => {
-            if (e.key == 'ArrowLeft') this.left = 0;
-            if (e.key == 'ArrowRight') this.right = 0;
-            if (e.key == 'ArrowUp') this.up = 0;
-            if (e.key == 'ArrowDown') this.down = 0;
-            if (e.key == 'd') this.forward = 0;
-            if (e.key == 's') this.reverse = 0;
-            this.userAction = this.left || this.right || this.down || this.up || this.reverse || this.forward;
+            if ($type == 'arrows') {
+                if (e.key == 'ArrowLeft') { 
+                    handler({event: 'release', action: 'left'});
+                }
+                if (e.key == 'ArrowRight') {
+                    handler({event: 'release', action: 'right'});
+                }
+                if (e.key == 'ArrowUp') {
+                    handler({event: 'release', action: 'up'});
+                }
+                if (e.key == 'ArrowDown') {
+                    handler({event: 'release', action: 'down'});
+                }
+                if (e.key == 'g') {
+                    handler({event: 'release', action: 'button1'});
+                }
+                if (e.key == 'f') {
+                    handler({event: 'release', action: 'button2'});
+                }
+            } else if ($type == 'wasd') {
+                if (e.key == 'a') { 
+                    handler({event: 'release', action: 'left'});
+                }
+                if (e.key == 'd') {
+                    handler({event: 'release', action: 'right'});
+                }
+                if (e.key == 'w') {
+                    handler({event: 'release', action: 'up'});
+                }
+                if (e.key == 's') {
+                    handler({event: 'release', action: 'down'});
+                }
+                if (e.key == 'o') {
+                    handler({event: 'release', action: 'button1'});
+                }
+                if (e.key == 'p') {
+                    handler({event: 'release', action: 'button2'});
+                }
+            }
         }
     }
 

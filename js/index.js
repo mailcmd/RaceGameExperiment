@@ -21,6 +21,7 @@ document.onkeypress = e => {
 
 const editor = new TrackEditor(document.createElement('canvas'), { hidden: true });
 const menu = new Menu(menuData, {open: false});
+const gamepadController = new GamepadsController();
 
 // main functions
 function animate(time) {
@@ -63,7 +64,7 @@ function animate(time) {
         width: 30,
         height: 50,
         road: road,
-        controlType: USER_KEYBOARD,
+        controlType: USER_JOYSTICK,
         controlMode: DEFAULT_GAMEMODE,
         sensorsCount: 31,
         // model: model

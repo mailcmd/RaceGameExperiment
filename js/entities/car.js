@@ -34,11 +34,10 @@ class Car {
         this.damaged = false;
         this.fitness = 0;
         this.score = 0;
-        this.updateCounter = 0;
-        
-        this.useBrain = controlType == CPU;
+        this.updateCounter = 0;                
 
-        if (this.useBrain) {
+        if (this.controlType == CPU) {
+            this.useBrain = true;
             this.sensor = new Sensor(this, this.sensorsCount);
             const center = this.sensorsCount % 2 == 1 ? 4 : 5;
             const sides = this.sensorsCount - center + 1;        
@@ -46,9 +45,19 @@ class Car {
             if (model) {
                 this.brain.load(model);
             }
-        } else {
-            this.controls = new Controls(controlType, this);
+        } else if (this.controlType == USER_KEYBOARD) {
+            this.keyboard = new Keyboard('arrows', this.#keyboardHandler.bind(this));
+        } else if (this.controlType == USER_JOYSTICK) {
+            this.gamepad = gamepadController.addGamepadHandler(0, {
+                pressButton: this.#gamepaddButtonsHandler.bind(this),
+                releaseButton: this.#gamepaddButtonsHandler.bind(this),
+                changeAxis: this.#gamepaddAxisHandler.bind(this),
+                holdAxis: this.#gamepaddAxisHandler.bind(this),
+                centerAxis: this.#gamepaddAxisHandler.bind(this)
+            });
         }        
+
+        this.controls = new Controls(this);
 
         this.img = new Image();
         this.mask = document.createElement('canvas');
@@ -106,12 +115,17 @@ class Car {
                 this.controls.right = outputs[2];
                 this.controls.down = outputs[3];                
             } 
-            
-            if (this.controlMode == STATIC) {
-                this.#arrowMove();
-            } else {
-                this.#linearMove();
+
+            if (this.controlType == USER_KEYBOARD) {            
+                if (this.controlMode == STATIC) {
+                    this.#directionalMove();
+                } else {
+                    this.#linearMove();
+                }
+            } else if (this.controlType == USER_JOYSTICK) {
+                this.#angularMove();
             }
+
             this.polygon = this.#createPolygon();
             this.damaged = this.#assessDamage();
             if (this.damaged) {
@@ -130,39 +144,151 @@ class Car {
         //if (this.useBrain) this.calculateScore(traffic);
     }
 
-    repair() {
-        let nearest = null;
-        const carPos = new Point(this.x, this.y);
-        const minDistance = Math.min(...this.road.points.map( a => carPos.distanceTo(new Point(a.x, a.y)) ));
-        const idx = this.road.points.findIndex( a => carPos.distanceTo(new Point(a.x, a.y)) == minDistance );
-        this.x = this.road.points[idx].x;
-        this.y = this.road.points[idx].y; 
-        this.angle = this.road.points[idx].angleTo( this.road.points[idx == this.road.points.length-1 ? 0 : idx+1 ] );
-        this.damaged = false;
-        this.speed = 0;
+    rotateTo(angle) {    
+        const eps = 0.2;
+        const deltaCoef = deltaTime / 1000;
+        const flip = (this.rotateSpeed+1) * deltaCoef;
+        if (abs(this.angle - angle) <= eps) {
+            this.angle = angle; 
+            return;
+        }
+        if (angle == 0) {
+            if (this.angle > PI) {
+                this.angle += flip; 
+            } else {
+                this.angle -= flip; 
+            }
+        } else if (standarizeAngle1E(angle + 2*PI - this.angle) < PI) {
+            this.angle += flip; 
+        } else {
+            this.angle -= flip; 
+        }
+    }
+
+    #keyboardHandler(e) {
+        if (this.controls[e.action] !== undefined) {
+            this.controls[e.action] = e.event == 'press' ? 1 : 0;
+        } else if (e.action == 'button1') {
+            this.controls.forward = e.event == 'press' ? 1 : 0;
+        } else if (e.action == 'button2') {
+            this.controls.reverse = e.event == 'press' ? 1 : 0;
+        }
+    }
+
+    #gamepaddAxisHandler(gp) {
+        if ((gp.event == 'hold' || gp.event == 'change') && gp.event == 'left') {
+            if (this.speed > 0) {        
+                this.rotateTo(gp.rad);
+            }
+        }
+    }
+    #gamepaddButtonsHandler(gp) {
+        if (gp.index == 1) {
+            this.controls.forward = gp.event == 'press' ? 1 : 0;
+        } else if (gp.index == 2) {
+            this.controls.reverse = gp.event == 'press' ? 1 : 0;
+        }
     }
     
-    draw({ ctx, drawSensors = false}) {        
-        if (drawSensors && this.sensor) {
-            this.sensor.draw();
+    #directionalMove() {
+        const deltaCoef = deltaTime / 1000;
+
+        if (this.controls.forward || this.controls.reverse) {
+            this.speed += this.acceleration*(this.controls.reverse?-0.5:1);
+        } 
+        
+        this.speed -= this.friction;
+
+        this.speed = this.speed > this.maxSpeed 
+            ? this.maxSpeed 
+            : this.speed <= this.friction ? 0 : this.speed;            
+
+        if (this.speed > 0) {        
+            if (this.controls.up && this.controls.right) {
+                this.rotateTo(PI/4);
+            } else if (this.controls.up && this.controls.left) {
+                this.rotateTo(3*PI/4);
+            } else if (this.controls.down && this.controls.left) {
+                this.rotateTo(5*PI/4);
+            } else if (this.controls.down && this.controls.right) {
+                this.rotateTo(7*PI/4);
+            } else if (this.controls.up) {
+                this.rotateTo(PI/2);
+            } else if (this.controls.down) {
+                this.rotateTo(3*PI/2);
+            } else if (this.controls.left) {
+                this.rotateTo(PI);
+            } else if (this.controls.right) {
+                this.rotateTo(0);
+            }
         }
-        ctx.save();
-        ctx.translate(this.x, this.y);
-        ctx.rotate(-this._angle);
-        if (!this.damaged) {
-            ctx.drawImage(
-                this.mask, 
-                -this.width / 2, -this.height / 2,
-                this.width, this.height
+
+        const mx = Math.sin(this._angle) * this.speed * deltaCoef;
+        const my = Math.cos(this._angle) * this.speed * deltaCoef;
+
+        this.x -= mx;
+        this.y -= my;
+
+        //this.distance += Math.hypot(mx, my);
+    }
+
+    #linearMove() {
+        const deltaCoef = deltaTime / 1000;
+
+        if (this.controls.up) {
+            this.speed += this.acceleration;
+        }
+        if (this.controls.down) {
+            this.speed -= this.acceleration * 0.7;
+        }
+
+        this.speed = this.speed > this.maxSpeed 
+            ? this.maxSpeed 
+            : (this.speed < -this.maxSpeed/2 
+                ? -this.maxSpeed/2 
+                : (Math.abs(this.speed) < this.friction ? 0 : this.speed)
             );
-            ctx.globalCompositeOperation = 'multiply';
+        this.speed -= Math.sign(this.speed) * this.friction;
+
+        if (this.speed != 0) {
+            const flipDir = Math.sign(this.speed);
+            if (this.controls.left) {
+                this.angle += this.rotateSpeed * flipDir * deltaCoef;
+            }
+            if (this.controls.right) {
+                this.angle -= this.rotateSpeed * flipDir * deltaCoef ;
+            }
         }
-        ctx.drawImage(
-            this.img, 
-            -this.width / 2, -this.height / 2,
-            this.width, this.height
-        );
-        ctx.restore();
+
+        const mx = Math.sin(this._angle) * this.speed * deltaCoef;
+        const my = Math.cos(this._angle) * this.speed * deltaCoef;
+
+        this.x -= mx;
+        this.y -= my;
+
+        //this.distance += Math.hypot(mx, my);
+    }
+
+    #angularMove() {
+        const deltaCoef = deltaTime / 1000;
+
+        if (this.controls.forward || this.controls.reverse) {
+            this.speed += this.acceleration*(this.controls.reverse?-0.5:1);
+        }
+        
+        this.speed -= this.friction;
+
+        this.speed = this.speed > this.maxSpeed 
+            ? this.maxSpeed 
+            : this.speed <= this.friction ? 0 : this.speed;            
+
+        const mx = Math.sin(this._angle) * this.speed * deltaCoef;
+        const my = Math.cos(this._angle) * this.speed * deltaCoef;
+
+        this.x -= mx;
+        this.y -= my;
+
+        //this.distance += Math.hypot(mx, my);
     }
 
     #assessDamage() {
@@ -213,114 +339,64 @@ class Car {
         return segments;
     }
     
-    #rotateTo(angle) {    
-        const eps = 0.2;
-        const deltaCoef = deltaTime / 1000;
-        const flip = (this.rotateSpeed+1) * deltaCoef;
-        if (abs(this.angle - angle) <= eps) {
-            this.angle = angle; 
-            return;
-        }
-        if (angle == 0) {
-            if (this.angle > PI) {
-                this.angle += flip; 
-            } else {
-                this.angle -= flip; 
-            }
-        //} else if (angle > this.angle && abs(angle - this.angle) < PI) {
-        } else if (standarizeAngle1E(angle + 2*PI - this.angle) < PI) {
-            this.angle += flip; 
-        } else {
-            this.angle -= flip; 
-        }
+    repair() {
+        let nearest = null;
+        const carPos = new Point(this.x, this.y);
+        const minDistance = Math.min(...this.road.points.map( a => carPos.distanceTo(new Point(a.x, a.y)) ));
+        const idx = this.road.points.findIndex( a => carPos.distanceTo(new Point(a.x, a.y)) == minDistance );
+        this.x = this.road.points[idx].x;
+        this.y = this.road.points[idx].y; 
+        this.angle = this.road.points[idx].angleTo( this.road.points[idx == this.road.points.length-1 ? 0 : idx+1 ] );
+        this.damaged = false;
+        this.speed = 0;
     }
-
-    #arrowMove() {
-        const previousPos = { x: this.x, y: this.y };
-        const deltaCoef = deltaTime / 1000;
-
-        if (this.controls.forward || this.controls.reverse) {
-            this.speed += this.acceleration*(this.controls.reverse?-0.5:1);
-        } 
-        
-        this.speed -= this.friction;
-
-        this.speed = this.speed > this.maxSpeed 
-            ? this.maxSpeed 
-            : this.speed <= this.friction ? 0 : this.speed;            
-
-        if (this.speed > 0) {        
-            if (this.controls.up && this.controls.right) {
-                this.#rotateTo(PI/4);
-            } else if (this.controls.up && this.controls.left) {
-                this.#rotateTo(3*PI/4);
-            } else if (this.controls.down && this.controls.left) {
-                this.#rotateTo(5*PI/4);
-            } else if (this.controls.down && this.controls.right) {
-                this.#rotateTo(7*PI/4);
-            } else if (this.controls.up) {
-                this.#rotateTo(PI/2);
-            } else if (this.controls.down) {
-                this.#rotateTo(3*PI/2);
-            } else if (this.controls.left) {
-                this.#rotateTo(PI);
-            } else if (this.controls.right) {
-                this.#rotateTo(0);
-            }
+    
+    draw({ ctx, drawSensors = false}) {        
+        if (drawSensors && this.sensor) {
+            this.sensor.draw();
         }
-
-        this.speed = this.speed > this.maxSpeed 
-            ? this.maxSpeed 
-            : this.speed <= this.friction ? 0 : this.speed;
-
-        const mx = Math.sin(this._angle) * this.speed * deltaCoef;
-        const my = Math.cos(this._angle) * this.speed * deltaCoef;
-
-        this.x -= mx;
-        this.y -= my;
-
-        if (this.x < 0 || this.x > world.width) this.x = previousPos.x;
-        if (this.y < 0 || this.y > world.height) this.y = previousPos.y;
-
-        //this.distance += Math.hypot(mx, my);
-    }
-
-    #linearMove() {
-        const previousPos = { x: this.x, y: this.y };
-        const deltaCoef = deltaTime / 1000;
-
-        if (this.controls.up) {
-            this.speed += this.acceleration;
-        }
-        if (this.controls.down) {
-            this.speed -= this.acceleration * 0.7;
-        }
-
-        this.speed = this.speed > this.maxSpeed 
-            ? this.maxSpeed 
-            : (this.speed < -this.maxSpeed/2 
-                ? -this.maxSpeed/2 
-                : (Math.abs(this.speed) < this.friction ? 0 : this.speed)
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(-this._angle);
+        if (!this.damaged) {
+            ctx.drawImage(
+                this.mask, 
+                -this.width / 2, -this.height / 2,
+                this.width, this.height
             );
-        this.speed -= Math.sign(this.speed) * this.friction;
-
-        if (this.speed != 0) {
-            const flipDir = Math.sign(this.speed);
-            if (this.controls.left) {
-                this.angle += this.rotateSpeed * flipDir * deltaCoef;
-            }
-            if (this.controls.right) {
-                this.angle -= this.rotateSpeed * flipDir * deltaCoef ;
-            }
+            ctx.globalCompositeOperation = 'multiply';
         }
+        ctx.drawImage(
+            this.img, 
+            -this.width / 2, -this.height / 2,
+            this.width, this.height
+        );
+        ctx.restore();
+    }
 
-        const mx = Math.sin(this._angle) * this.speed * deltaCoef;
-        const my = Math.cos(this._angle) * this.speed * deltaCoef;
+    reset() {
+        this.x = road.getLaneCenter(1);
+        this.y = 100;
+        this.overpassedCars = 0;
+        this.distance = 0;
+        this.fitness = 0;
+        this.angle = 0;
+        this.speed = 0;
+        this.damaged = false;
+        this.superiorRace = false;
+        this.controls.up = 0;
+        this.controls.down = 0; 
+        this.controls.left = 0; 
+        this.controls.right = 0;
+        this.idiotCounter = 0;
+    }
 
-        this.x -= mx;
-        this.y -= my;
+    getInputs() {
+        return [ ...this.sensor.readings.map( r => r==null ? 0 : 1-r.offset ), this.speed/this.maxSpeed ];
+    }
 
-        //this.distance += Math.hypot(mx, my);
+    getProgress() {
+        return this.overpassedCars / traffic.length;
     }
 
     calculateScore(traffic) {
@@ -350,32 +426,6 @@ class Car {
             model: newCarBrain.model
         });
 	}
-
-    reset() {
-        this.x = road.getLaneCenter(1);
-        this.y = 100;
-        this.overpassedCars = 0;
-        this.distance = 0;
-        this.fitness = 0;
-        this.angle = 0;
-        this.speed = 0;
-        this.damaged = false;
-        this.superiorRace = false;
-        this.controls.up = 0;
-        this.controls.down = 0; 
-        this.controls.left = 0; 
-        this.controls.right = 0;
-        this.idiotCounter = 0;
-    }
-
-
-    getInputs() {
-        return [ ...this.sensor.readings.map( r => r==null ? 0 : 1-r.offset ), this.speed/this.maxSpeed ];
-    }
-
-    getProgress() {
-        return this.overpassedCars / traffic.length;
-    }
 
 }
 
