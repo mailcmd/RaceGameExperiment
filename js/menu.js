@@ -9,7 +9,7 @@ const menuData =
         {
             title: "Editor",
             type: "action",
-            action: "window.open('trackEditor.html')"
+            action: "window.open('editor.html')"
         },
         {
             title: "Opciones",

@@ -20,7 +20,7 @@ document.onkeypress = e => {
 };
 
 const editor = new TrackEditor(document.createElement('canvas'), { hidden: true });
-const menu = new Menu(menuData, {open: false});
+const menu = new Menu(menuData, { open: false, width: '25%' });
 const gamepadController = new GamepadsController();
 
 // main functions
@@ -86,6 +86,7 @@ function animate(time) {
     // init main loop
     animate(1);
 
+    setTimeout( togglePause, 500 );
 //});
 })();
 

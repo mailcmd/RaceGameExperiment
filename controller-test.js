@@ -15,6 +15,7 @@
 
 // Controller.search();
 
+/*
 const g = new GamepadsController();
 
 g.addGamepadHandler(0, {
@@ -24,3 +25,14 @@ g.addGamepadHandler(0, {
     holdAxis: function(g) { console.log(g) },
     centerAxis: function(g) { console.log(g) }
 });
+*/
+
+const lm = new ListenersManager();
+
+lm.addEventListener(document, 'keydown', ev => console.log('Tecla '+ev.key) );
+
+setTimeout( () => {
+    lm.save();
+    lm.addEventListener(document, 'keydown', ev => console.log('Key pressed: '+ev.key) );
+    setTimeout( () => lm.restore(), 5000);
+}, 5000);

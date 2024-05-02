@@ -1,65 +1,3 @@
-/* menuData 
-test = 
-{
-    "0": [
-        {
-            "title": "Submenu",
-            "type": "submenu",   // submenu, action, meter, onoff, select 
-            "path": "0.1"
-        },
-        {
-            "title": "Action",
-            "type": "action",
-            "action": "console.log",
-            "params": "editor, world"
-        },
-        {
-            "title": "Meter",
-            "type": "meter",
-            "min": "0",
-            "max": "100",
-            "default": 50,
-            "onchange": "console.log",
-            "variable": "car.maxSpeed"
-        },
-        {
-            "title": "OnOff",
-            "type": "onoff",
-            "onchange": "console.log",
-            "variable": "resetGameNow"
-        },
-        {
-            "title": "Select",
-            "type": "select",
-            "onchange": "console.log",
-            "options": [ "opt 1", "opt 2", "opt 3" ],
-            "variable": "refreshCanvas"
-        }
-    ],
-    "0.1": [
-        {
-            "title": "Action 1",
-            "type": "action",
-            "action": "console.log",
-            "params": "editor, world"
-        },
-        {
-            "title": "Action 2",
-            "type": "action",
-            "action": "console.log",
-            "params": "editor, world"
-        },
-        {
-            "title": "Action 3",
-            "type": "action",
-            "action": "console.log",
-            "params": "editor, world"
-        }
-    
-    ]
-};
-
-*/
 
 const menuStyles = `
 .menu { 
@@ -80,14 +18,14 @@ const menuStyles = `
     __background-size: 400% 400%;                
     background-color: #0008;
     backdrop-filter: blur(2px);
-    transition-property: translate;
+    transition-property: scale;
     transition-duration: 0.2s;
     transition-timing-function: cubic-bezier(.68,-0.55,.27,1.55);
-    clip-path: polygon(66.7% 2.8%, 99.9% 0%, 100.2% 89.5%, 49.6% 100.3%, 0.5% 90.8%, 3.7% 54.5%, 0% 9.3%, 27.5% 1.5%, 50.1% 3.5%);
+    clip-path: polygon(66.7% 2.8%, 99% 5%, 92.9% 55%, 100.2% 89.5%, 49.6% 100.3%, 0.5% 90.8%, 3.7% 54.5%, 0% 9.3%, 27.5% 1.5%, 50.1% 3.5%);
 }
 
 .menu.close {
-    translate: 100%;
+    scale: 0% !important;
 }
 
 
@@ -115,7 +53,7 @@ const menuStyles = `
     animation-timing-function: linear;
 }
 
-.menu-item:hover {
+.menu-item:hover, .menu-item.selected {
     filter: brightness(1.4) blur(0.5px);
     transform: scale(1.01);
     animation-name: unset;
@@ -211,7 +149,7 @@ meter::-moz-meter-bar {
 class Menu {
     constructor(menuData, {
         title = '',
-        position = 'right',
+        position = 'center',
         font = 'arial',
         open = false,
         background = 'rgb(0, 7, 42)',
@@ -224,7 +162,12 @@ class Menu {
         this.open = open;
         
         this.container = document.createElement('div');
-        this.container.style[this.position] = '-40px';
+        if (this.position == 'center') {
+            this.container.style.left = 'calc(0.5 * '+innerWidth+'px - 0.5 * '+width+')';
+            this.container.style.paddingRight = '15px';
+        } else {
+            this.container.style[this.position] = '-40px';
+        }
         this.container.style.width = width;
         this.container.style.fontFamily = this.font;
         //this.container.style.backgroundColor = background;
@@ -445,3 +388,66 @@ class Menu {
         this.open = false;
     }
 }
+
+/* menuData 
+test = 
+{
+    "0": [
+        {
+            "title": "Submenu",
+            "type": "submenu",   // submenu, action, meter, onoff, select 
+            "path": "0.1"
+        },
+        {
+            "title": "Action",
+            "type": "action",
+            "action": "console.log",
+            "params": "editor, world"
+        },
+        {
+            "title": "Meter",
+            "type": "meter",
+            "min": "0",
+            "max": "100",
+            "default": 50,
+            "onchange": "console.log",
+            "variable": "car.maxSpeed"
+        },
+        {
+            "title": "OnOff",
+            "type": "onoff",
+            "onchange": "console.log",
+            "variable": "resetGameNow"
+        },
+        {
+            "title": "Select",
+            "type": "select",
+            "onchange": "console.log",
+            "options": [ "opt 1", "opt 2", "opt 3" ],
+            "variable": "refreshCanvas"
+        }
+    ],
+    "0.1": [
+        {
+            "title": "Action 1",
+            "type": "action",
+            "action": "console.log",
+            "params": "editor, world"
+        },
+        {
+            "title": "Action 2",
+            "type": "action",
+            "action": "console.log",
+            "params": "editor, world"
+        },
+        {
+            "title": "Action 3",
+            "type": "action",
+            "action": "console.log",
+            "params": "editor, world"
+        }
+    
+    ]
+};
+
+*/
