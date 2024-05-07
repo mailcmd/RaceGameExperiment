@@ -1,7 +1,8 @@
 class GamepadsController {
-    constructor() {
+    constructor(statusHandler = function(){}) {
         this.gamepads = [];
         this.gamepadsHandlers = [];
+        this.statusHandler = statusHandler;
 
         this.#addControllerListeners();        
         this.search();
@@ -105,6 +106,10 @@ class GamepadsController {
             this.#newGamepad({ gamepad: Gamepads[i] });
         }
     }
+    
+    setStatusHandler(fn) {
+        this.statusHandler = fn;
+    }
 
     #addControllerListeners() {
         window.addEventListener('gamepadconnected', this.#newGamepad.bind(this), false);
@@ -126,12 +131,15 @@ class GamepadsController {
         }
         log('Controller found at index ' + e.gamepad.index + '.');
         log(this.gamepads[e.gamepad.index].id + ' is ready!');
+        this.statusHandler({ self: this, type: 'add', gamepad: e.gamepad });
         if (this.getGamepads().length == 1) this.update();
+        
     }
 
     #lostGamepad(e) {
         log('The controller at index ' + e.gamepad.index + ' has been disconnected.');
         this.gamepads[e.gamepad.index] = null;
+        this.statusHandler({ self: this, type: 'remove', gamepad: e.gamepad });
     }
 
 }

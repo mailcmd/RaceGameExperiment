@@ -7,7 +7,15 @@ const Neuron = synaptic.Neuron,
 	Architect = synaptic.Architect;
 
 // DATA CONSTANTS
-const USER_KEYBOARD = 1, USER_JOYSTICK = 2, CPU = 3, DUMMY = 4;
+const   
+    USER_KEYBOARD1 = 0, 
+    USER_KEYBOARD2 = 1, 
+    USER_JOYSTICK1 = 2, 
+    USER_JOYSTICK2 = 3, 
+    USER_JOYSTICK3 = 4, 
+    USER_JOYSTICK4 = 5, 
+    CPU = 98, DUMMY = 99;
+    
 const STATIC = 1, ROTATE = 2;
 //const TOP_LEFT = 1, TOP_RIGHT = 2, BOTTOM_RIGHT = 3, BOTTOM_LEFT = 4;
  

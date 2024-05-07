@@ -29,10 +29,13 @@ g.addGamepadHandler(0, {
 
 const lm = new ListenersManager();
 
-lm.addEventListener(document, 'keydown', ev => console.log('Tecla '+ev.key) );
+document.addEventListener('keydown', ev => console.log('Tecla '+ev.key, Math.random(), ev) );
+document.addEventListener('keyup', ev => console.log('Tecla '+ev.key, Math.random(), ev) );
 
-setTimeout( () => {
+function a() {
     lm.save();
-    lm.addEventListener(document, 'keydown', ev => console.log('Key pressed: '+ev.key) );
-    setTimeout( () => lm.restore(), 5000);
-}, 5000);
+    document.addEventListener('click', ev => console.log('Click pressed: '+ev.key, Math.random()) );
+} 
+function b() {
+    lm.restore();
+}

@@ -45,19 +45,9 @@ class Car {
             if (model) {
                 this.brain.load(model);
             }
-        } else if (this.controlType == USER_KEYBOARD) {
-            this.keyboard = new Keyboard('arrows', this.#keyboardHandler.bind(this));
-        } else if (this.controlType == USER_JOYSTICK) {
-            this.gamepad = gamepadController.addGamepadHandler(0, {
-                pressButton: this.#gamepaddButtonsHandler.bind(this),
-                releaseButton: this.#gamepaddButtonsHandler.bind(this),
-                changeAxis: this.#gamepaddAxisHandler.bind(this),
-                holdAxis: this.#gamepaddAxisHandler.bind(this),
-                centerAxis: this.#gamepaddAxisHandler.bind(this)
-            });
+        } else if (this.controlType >= USER_KEYBOARD1 && this.controlType <= USER_JOYSTICK4) {
+            this.control = new Control({ entity: this, type: this.controlType });
         }        
-
-        this.controls = new Controls(this);
 
         this.img = new Image();
         this.mask = document.createElement('canvas');
@@ -109,20 +99,19 @@ class Car {
 
                 let outputs = [ 0,0,0,0 ];
                 outputs = this.brain.feedForward(inputs);
-                //log(outputs.toString())
-                this.controls.left = outputs[0];
-                this.controls.up = outputs[1];
-                this.controls.right = outputs[2];
-                this.controls.down = outputs[3];                
+                this.control.left = outputs[0];
+                this.control.up = outputs[1];
+                this.control.right = outputs[2];
+                this.control.down = outputs[3];                
             } 
 
-            if (this.controlType == USER_KEYBOARD) {            
+            if (this.controlType == USER_KEYBOARD1 || this.controlType == USER_KEYBOARD2) {
                 if (this.controlMode == STATIC) {
                     this.#directionalMove();
                 } else {
                     this.#linearMove();
                 }
-            } else if (this.controlType == USER_JOYSTICK) {
+            } else if (this.controlType >= USER_JOYSTICK1 && this.controlType <= USER_JOYSTICK4) {
                 this.#angularMove();
             }
 
@@ -165,36 +154,11 @@ class Car {
         }
     }
 
-    #keyboardHandler(e) {
-        if (this.controls[e.action] !== undefined) {
-            this.controls[e.action] = e.event == 'press' ? 1 : 0;
-        } else if (e.action == 'button1') {
-            this.controls.forward = e.event == 'press' ? 1 : 0;
-        } else if (e.action == 'button2') {
-            this.controls.reverse = e.event == 'press' ? 1 : 0;
-        }
-    }
-
-    #gamepaddAxisHandler(gp) {
-        if ((gp.event == 'hold' || gp.event == 'change') && gp.id == 'left') {
-            if (this.speed > 0) {        
-                this.rotateTo(gp.rad);
-            }
-        } 
-    }
-    #gamepaddButtonsHandler(gp) {
-        if (gp.index == 1) {
-            this.controls.forward = gp.event == 'press' ? 1 : 0;
-        } else if (gp.index == 2) {
-            this.controls.reverse = gp.event == 'press' ? 1 : 0;
-        }
-    }
-    
     #directionalMove() {
         const deltaCoef = deltaTime / 1000;
 
-        if (this.controls.forward || this.controls.reverse) {
-            this.speed += this.acceleration*(this.controls.reverse?-0.5:1);
+        if (this.control.userAction[0] || this.control.userAction[1]) {
+            this.speed += this.acceleration * (this.control.userAction[1] ? -0.5 : 1);
         } 
         
         this.speed -= this.friction;
@@ -204,21 +168,21 @@ class Car {
             : this.speed <= this.friction ? 0 : this.speed;            
 
         if (this.speed > 0) {        
-            if (this.controls.up && this.controls.right) {
+            if (this.control.up && this.control.right) {
                 this.rotateTo(PI/4);
-            } else if (this.controls.up && this.controls.left) {
+            } else if (this.control.up && this.control.left) {
                 this.rotateTo(3*PI/4);
-            } else if (this.controls.down && this.controls.left) {
+            } else if (this.control.down && this.control.left) {
                 this.rotateTo(5*PI/4);
-            } else if (this.controls.down && this.controls.right) {
+            } else if (this.control.down && this.control.right) {
                 this.rotateTo(7*PI/4);
-            } else if (this.controls.up) {
+            } else if (this.control.up) {
                 this.rotateTo(PI/2);
-            } else if (this.controls.down) {
+            } else if (this.control.down) {
                 this.rotateTo(3*PI/2);
-            } else if (this.controls.left) {
+            } else if (this.control.left) {
                 this.rotateTo(PI);
-            } else if (this.controls.right) {
+            } else if (this.control.right) {
                 this.rotateTo(0);
             }
         }
@@ -235,10 +199,10 @@ class Car {
     #linearMove() {
         const deltaCoef = deltaTime / 1000;
 
-        if (this.controls.up) {
+        if (this.control.up) {
             this.speed += this.acceleration;
         }
-        if (this.controls.down) {
+        if (this.control.down) {
             this.speed -= this.acceleration * 0.7;
         }
 
@@ -252,10 +216,10 @@ class Car {
 
         if (this.speed != 0) {
             const flipDir = Math.sign(this.speed);
-            if (this.controls.left) {
+            if (this.control.left) {
                 this.angle += this.rotateSpeed * flipDir * deltaCoef;
             }
-            if (this.controls.right) {
+            if (this.control.right) {
                 this.angle -= this.rotateSpeed * flipDir * deltaCoef ;
             }
         }
@@ -272,8 +236,8 @@ class Car {
     #angularMove() {
         const deltaCoef = deltaTime / 1000;
 
-        if (this.controls.forward || this.controls.reverse) {
-            this.speed += this.acceleration*(this.controls.reverse?-0.5:1);
+        if (this.control.userAction[0] || this.control.userAction[1]) {
+            this.speed += this.acceleration * (this.control.userAction[1] ? -0.5 : 1);
         }
         
         this.speed -= this.friction;
@@ -384,10 +348,10 @@ class Car {
         this.speed = 0;
         this.damaged = false;
         this.superiorRace = false;
-        this.controls.up = 0;
-        this.controls.down = 0; 
-        this.controls.left = 0; 
-        this.controls.right = 0;
+        this.control.up = 0;
+        this.control.down = 0; 
+        this.control.left = 0; 
+        this.control.right = 0;
         this.idiotCounter = 0;
     }
 

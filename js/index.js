@@ -19,9 +19,9 @@ document.onkeypress = e => {
     }
 };
 
-const editor = new TrackEditor(document.createElement('canvas'), { hidden: true });
-const menu = new Menu(menuData, { open: false, width: '25%' });
+const listeners = new ListenersManager();
 const gamepadController = new GamepadsController();
+const editor = new TrackEditor(document.createElement('canvas'), { hidden: true });
 
 // main functions
 function animate(time) {
@@ -64,7 +64,7 @@ function animate(time) {
         width: 30,
         height: 50,
         road: road,
-        controlType: USER_JOYSTICK,
+        controlType: USER_KEYBOARD1,
         controlMode: DEFAULT_GAMEMODE,
         sensorsCount: 31,
         // model: model
@@ -81,6 +81,18 @@ function animate(time) {
     minimap = new Minimap({
         world: world,
         visible: showMinimap
+    });
+
+    menu = new Menu(menuData, { 
+        open: false, 
+        width: '25%',
+        onShow: function() {
+            listeners.save();
+            Menu.addKeyboardListeners();
+        },
+        onHide: function() {
+            listeners.restore();
+        }
     });
 
     // init main loop

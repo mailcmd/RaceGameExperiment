@@ -153,13 +153,17 @@ class Menu {
         font = 'arial',
         open = false,
         background = 'rgb(0, 7, 42)',
-        width = '15%'
+        width = '15%',
+        onShow = ()=>{},
+        onHide = ()=>{},
     } = {}) {
         this.data = menuData ?? test;
         this.title = title;
         this.font = font;
         this.position = position;
         this.open = open;
+        this.onShow = onShow;
+        this.onHide = onHide;
         
         this.container = document.createElement('div');
         if (this.position == 'center') {
@@ -175,6 +179,7 @@ class Menu {
         this.container.classList.add( open ? 'open' : 'close' );
 
         this.containerBack = this.container.cloneNode();
+        this.containerBack.classList.add( 'background' );
         this.containerBack.style.backgroundImage = 'radial-gradient(circle at -100%, #ff8f00, transparent 76%)';        
         this.containerBack.style.scale = '1.02';
         
@@ -364,7 +369,7 @@ class Menu {
 
             this.container.appendChild(itemElement);
         });
-        
+        this.container.querySelector('.menu-item').classList.add('selected');
     }
     
     isOpen() {
@@ -379,6 +384,7 @@ class Menu {
         this.containerBack.classList.remove('close');
         this.containerBack.classList.add('open');
         this.open = true;
+        this.onShow();
     }
     hide() {
         this.container.classList.remove('open');
@@ -386,7 +392,31 @@ class Menu {
         this.containerBack.classList.remove('open');
         this.containerBack.classList.add('close');
         this.open = false;
+        this.onHide();
     }
+    
+    /////////////////////////////////////////////////////////////////////////////////////////
+    
+    static addKeyboardListeners() {
+        document.addEventListener('keydown', (e) => {
+            const menu = document.querySelector('.menu.open:not(.background)');
+            
+            if (e.key == 'Enter') {
+                menu.querySelector('.menu-item.selected').click();
+            } else if (e.key == 'ArrowLeft') {
+            } else if (e.key == 'ArrowRight') {                
+            } else if (e.key == 'ArrowUp') {
+                const item = menu.querySelector('.menu-item.selected')?.previousSibling ?? menu.querySelector('.menu-item.selected');
+                menu.querySelectorAll('.menu-item').forEach( it => it.classList.remove('selected') );
+                item.classList.add('selected');
+            } else if (e.key == 'ArrowDown') {
+                const item = menu.querySelector('.menu-item.selected')?.nextSibling ?? menu.querySelector('.menu-item.selected');
+                menu.querySelectorAll('.menu-item').forEach( it => it.classList.remove('selected') );
+                item.classList.add('selected');                
+            }            
+        }, true);
+    }
+    
 }
 
 /* menuData 
