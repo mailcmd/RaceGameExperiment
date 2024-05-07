@@ -20,30 +20,30 @@ class ListenersManager {
         ListenersManager.savedStatuses = [];
     }
     
-    static addEventListener(eventName, handler, ...extra) {
-        ListenersManager.realAddEventListener.call(this, eventName, handler, ...extra);
+    static addEventListener(eventName, handler, extra) {
+        ListenersManager.realAddEventListener.call(this, eventName, handler, extra);
         ListenersManager.currentStatus.push( { domObject: this, eventName, handler, extra } );
         return ListenersManager.currentStatus.length;
     }
     
-    static removeEventListener(eventName, handler, ...extra) {
-        ListenersManager.realRemoveEventListener.call(this, eventName, handler, ...extra);
-        const idx = ListenersManager.currentStatus.findIndex( d => d.domObject == this && d.eventName == eventName && d.handler == handler && JSON.stringify(d.extra) == JSON.stringify(...extra) );
+    static removeEventListener(eventName, handler, extra) {
+        ListenersManager.realRemoveEventListener.call(this, eventName, handler, extra);
+        const idx = ListenersManager.currentStatus.findIndex( d => d.domObject == this && d.eventName == eventName && d.handler == handler && JSON.stringify(d.extra) == JSON.stringify(extra) );
         ListenersManager.currentStatus.splice(idx, 1);
     }
     
     save() {
         ListenersManager.savedStatuses.push( ListenersManager.currentStatus.slice(0) );
-        this.#removeAll();
+        this.removeAll();
     }
     
     restore() {
-        this.#removeAll();
+        this.removeAll();
         const currentStatus = ListenersManager.savedStatuses.pop();
         currentStatus.forEach( ({domObject, eventName, handler, extra}) => domObject.addEventListener(eventName, handler, extra) );    
     }
 
-    #removeAll() {
+    removeAll() {
         while (ListenersManager.currentStatus.length) {
             const {domObject, eventName, handler, extra} = ListenersManager.currentStatus[0];
             domObject.removeEventListener(eventName, handler, extra);

@@ -1,7 +1,7 @@
 
-document.onkeypress = e => {
+document.addEventListener('keydown', e => {
     console.log(e.keyCode)
-    if (e.keyCode == 32) {
+    if (e.keyCode == 27) {
         //(paused = !paused) || animate(frameTime) ;
         //document.getElementById('paused').style.display = paused ? 'flex' : 'none';
         togglePause();
@@ -17,7 +17,7 @@ document.onkeypress = e => {
     } else if (e.keyCode == 119) {
         viewport.moveCenter(0, 20);
     }
-};
+}, true);
 
 const listeners = new ListenersManager();
 const gamepadController = new GamepadsController();

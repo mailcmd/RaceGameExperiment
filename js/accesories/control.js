@@ -63,7 +63,7 @@ class Control {
     #keyboardHandler(e) {
         if (this[e.action] !== undefined) {
             this[e.action] = e.event == 'press' ? 1 : 0;
-        } else if (this.userActions[e.action.replace('userAction','')] != undefined) {
+        } else if (this.userAction[e.action.replace('userAction','')] != undefined) {
             this.userAction[e.action.replace('userAction','')] = e.event == 'press' ? 1 : 0;
         }
     }
