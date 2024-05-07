@@ -219,6 +219,7 @@ class Menu {
             const itemElement = document.createElement('div');
             itemElement.style.animationDelay = (i*0.2).toFixed(2)+'s';
             itemElement.style.animationDirection = i % 2 ? 'normal' : 'reverse';
+            itemElement.setAttribute('type', item.type);
             
             if (item.type == 'submenu') {
                 itemElement.innerHTML = item.title;
@@ -327,9 +328,9 @@ class Menu {
                 itemElement.value = item.options[ itemElement.index ];
 
                 itemElement.innerHTML = `
-                    <span class="select-arrow" onclick="this.parentNode.prev()" style="float: left; rotate: 45deg; top: -3px;">◣</span>
+                    <span class="select-arrow left" onclick="this.parentNode.prev()" style="float: left; rotate: 45deg; top: -3px;">◣</span>
                     <div style="cursor: default; display: inline-block; z-index: 3;">${typeof(itemElement.value)=='object'?itemElement.value.text:itemElement.value}</div>
-                    <span class="select-arrow" onclick="this.parentNode.next()" style="float: right; rotate: -135deg; top: 1px;">◣</span>
+                    <span class="select-arrow right" onclick="this.parentNode.next()" style="float: right; rotate: -135deg; top: 1px;">◣</span>
                 `;
 
                 itemElement.next = (function(){
@@ -404,7 +405,25 @@ class Menu {
             if (e.key == 'Enter') {
                 menu.querySelector('.menu-item.selected').click();
             } else if (e.key == 'ArrowLeft') {
+                const item = menu.querySelector('.menu-item.selected');
+                const type = item.getAttribute('type');
+                if (type == 'meter') {
+                    item.querySelector('meter').dispatchEvent(new WheelEvent('wheel', {
+                        deltaY: 1
+                    }));
+                } else if (type == 'select') {
+                    item.querySelector('span.select-arrow.left').click();
+                }
             } else if (e.key == 'ArrowRight') {                
+                const item = menu.querySelector('.menu-item.selected');
+                const type = item.getAttribute('type');
+                if (type == 'meter') {
+                    item.querySelector('meter').dispatchEvent(new WheelEvent('wheel', {
+                        deltaY: -1
+                    }));
+                } else if (type == 'select') {
+                    item.querySelector('span.select-arrow.right').click();
+                }
             } else if (e.key == 'ArrowUp') {
                 const item = menu.querySelector('.menu-item.selected')?.previousSibling ?? menu.querySelector('.menu-item.selected');
                 menu.querySelectorAll('.menu-item').forEach( it => it.classList.remove('selected') );
