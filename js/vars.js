@@ -38,5 +38,5 @@ let gamemode = DEFAULT_GAMEMODE;
 // admin actions control
 let paused = false, showMinimap = false;
 
-var world, viewport, minimap, roadPoints, car, road;
+var world, viewport, minimap, roadPoints, car, road, traffic = [];
 

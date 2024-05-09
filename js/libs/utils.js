@@ -49,6 +49,10 @@ function standarizeAngle1E(a) {
 
 
 function getIntersection(A, B, C, D) {
+    if (!C) {
+        [ C, D ] = [ B.p1, B.p2 ];
+        [ A, B ] = [ A.p1, A.p2 ];
+    }
     const tTop = (D.x - C.x) * (A.y - C.y) - (D.y - C.y) * (A.x - C.x);
     const uTop = (C.y - A.y) * (A.x - B.x) - (C.x - A.x) * (A.y - B.y);
     const bottom = (D.y - C.y) * (B.x - A.x) - (D.x - C.x) * (B.y - A.y);

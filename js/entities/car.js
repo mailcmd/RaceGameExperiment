@@ -45,6 +45,7 @@ class Car {
             if (model) {
                 this.brain.load(model);
             }
+            this.control = new Control({ entity: this, type: this.controlType });
         } else if (this.controlType >= USER_KEYBOARD1 && this.controlType <= USER_JOYSTICK4) {
             this.control = new Control({ entity: this, type: this.controlType });
         }        
@@ -86,7 +87,7 @@ class Car {
         if (!this.damaged) {            
             if (this.useBrain) {
                 //this.calculateScore(traffic);
-                //this.sensor.update(road, traffic);
+                this.sensor.update(road, traffic);
                 const sensors = this.getInputs();
                     
                 const inputs = [
@@ -113,6 +114,8 @@ class Car {
                 }
             } else if (this.controlType >= USER_JOYSTICK1 && this.controlType <= USER_JOYSTICK4) {
                 this.#angularMove();
+            } else if (this.controlType == CPU) {
+                this.#linearMove();
             }
 
             this.polygon = this.#createPolygon();
@@ -315,9 +318,9 @@ class Car {
         this.speed = 0;
     }
     
-    draw({ ctx, drawSensors = false}) {        
+    draw({ ctx, drawSensors = true}) {        
         if (drawSensors && this.sensor) {
-            this.sensor.draw();
+            this.sensor.draw({ctx});
         }
         ctx.save();
         ctx.translate(this.x, this.y);

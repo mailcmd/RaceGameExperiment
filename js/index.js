@@ -1,6 +1,6 @@
 
 document.addEventListener('keydown', e => {
-    console.log(e.keyCode)
+    //console.log(e.keyCode)
     if (e.keyCode == 27) {
         //(paused = !paused) || animate(frameTime) ;
         //document.getElementById('paused').style.display = paused ? 'flex' : 'none';
@@ -64,10 +64,10 @@ function animate(time) {
         width: 30,
         height: 50,
         road: road,
-        controlType: USER_KEYBOARD1,
+        controlType: CPU, //USER_KEYBOARD1,
         controlMode: DEFAULT_GAMEMODE,
         sensorsCount: 31,
-        // model: model
+        model: (await fetch('models/good_31_4.json').then(response => response.json()))
     });
     world.addDynamicEntity(car);
 
