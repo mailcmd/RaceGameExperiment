@@ -16,10 +16,10 @@ const
     USER_JOYSTICK4 = 5, 
     CPU = 98, DUMMY = 99;
     
-const STATIC = 1, ROTATE = 2;
+const STATIC = 1, ROTATE = 2, FULLSCREEN = 3;
 //const TOP_LEFT = 1, TOP_RIGHT = 2, BOTTOM_RIGHT = 3, BOTTOM_LEFT = 4;
  
-const DEFAULT_GAMEMODE = STATIC;
+const DEFAULT_GAMEMODE = FULLSCREEN;
 
 // config constants
 const carsCount = 100; 

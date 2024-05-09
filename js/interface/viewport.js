@@ -26,7 +26,7 @@ class Viewport {
         this.angle = angle;
         this.mode = mode;
         this.showFPS = showFPS;
-        this.setCenter(centerX, centerY, angle);
+        this.setCenter(centerX, centerY, angle, true);
     }
     
     setMode(mode) {
@@ -40,7 +40,8 @@ class Viewport {
         this.x += offsetX;
         this.y += offsetY;
     }
-    setCenter(x, y, angle = 0) {
+    setCenter(x, y, angle = 0, force = false) {
+        if (!force && this.mode == FULLSCREEN) return;
         this.x = x; 
         this.y = y; 
         this.rotate(angle);
@@ -63,7 +64,7 @@ class Viewport {
                 this.x - width/2, this.y - height/2, width, height,
                 -width/2, -height/2, width, height
             );
-        } else {
+        } else { // STATIC or FULLSCREEN
             this.ctx.clearRect(0,0,this.ctx.canvas.width, this.ctx.canvas.height);        
             this.ctx.putImageData(
                 this.world.getImageData(this.x - this.ctx.canvas.width/2, this.y - this.ctx.canvas.height/2, this.ctx.canvas.width, this.ctx.canvas.height), 

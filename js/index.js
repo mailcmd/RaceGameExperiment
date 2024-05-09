@@ -45,12 +45,13 @@ function animate(time) {
 (async function(){    
     
     editor.load(await fetchdata('data/circle.json'), true);
-    roadPoints = editor.getScalated(window.innerWidth * 2);    
+    roadPoints = editor.getScalated(window.innerWidth, window.innerHeight);    
 
     //create world
     world = new World({ 
         roadPoints: roadPoints,
-        width: window.innerWidth * 2
+        width: window.innerWidth,
+        height: window.innerHeight
     });
 
     road = new Road({ roadPoints, roadWidth });
@@ -75,6 +76,8 @@ function animate(time) {
         world: world,
         width: window.innerWidth,
         height: window.innerHeight,
+        centerX: window.innerWidth / 2,
+        centerY: window.innerHeight / 2,
         mode: DEFAULT_GAMEMODE
     });
 
