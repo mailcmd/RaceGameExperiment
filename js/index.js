@@ -30,11 +30,21 @@ function animate(time) {
 
     // main tasks
     world.update();
-    viewport.setCenter(car.x, car.y, car.angle - PI/2);
+    
+    const carMaxScore = Math.max(...cars.map( c => c.score ));
+    bestCar = cars.find( car => car.score ==  carMaxScore) ?? bestCar;    
+    
+//    viewport.setCenter(car.x, car.y, car.angle - PI/2);
     viewport.display();
 
     if (showMinimap) minimap.update();
 
+    if (cars && cars.filter( c => !c.damaged ).length == 0) {
+        createNextGeneration();
+    } else if (resetGameNow) {
+        resetGame();
+    }
+    
     if (!paused) {
         requestAnimationFrame(animate);
     }
@@ -44,7 +54,7 @@ function animate(time) {
 //editor.loadFromFile(function(editor){
 (async function(){    
     
-    editor.load(await fetchdata('data/circle.json'), true);
+    editor.load(await fetchdata('data/rally.json'), true);
     roadPoints = editor.getScalated(window.innerWidth, window.innerHeight);    
 
     //create world
@@ -58,12 +68,12 @@ function animate(time) {
     world.addStaticEntity(road);
     
     world.renderizeStatic();
-
+    /*
     car = new Car({
         x: roadPoints[0].x,
         y: roadPoints[0].y,    
-        width: 30,
-        height: 50,
+        width: 25,
+        height: 40,
         road: road,
         controlType: CPU, //USER_KEYBOARD1,
         controlMode: DEFAULT_GAMEMODE,
@@ -71,6 +81,8 @@ function animate(time) {
         model: (await fetch('models/good_31_4.json').then(response => response.json()))
     });
     world.addDynamicEntity(car);
+    */
+    cars = generateCars(50, (await fetch('models/good_31_4.json').then(response => response.json())));
 
     viewport = new Viewport({
         world: world,

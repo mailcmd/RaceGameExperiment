@@ -3,22 +3,25 @@ function togglePause() {
     document.getElementById('paused').style.display = paused ? 'flex' : 'none';
 }
 
-function generateCars(N, model, controlType = 'AI') {
+function generateCars(N, model) {
     const cars = [];    
     for (let i = 0; i < N; i++) {
         cars.push( 
             new Car({
-                x: road.getLaneCenter(1),
-                y: 100,
-                width: 30,
-                height: 50,
-                controlType: controlType,
+                x: roadPoints[0].x,
+                y: roadPoints[0].y,
+                width: 25,
+                height: 40,
+                road: road,
+                controlType: CPU,
+                controlMode: DEFAULT_GAMEMODE,
                 sensorsCount: 31,
                 model: model
             })
         );
         // Muto todos menos el primero
-        //if (i > 0) cars[cars.length-1].brain.mutate(mutateRatio); 
+        if (i > 0) cars[cars.length-1].brain.mutate(mutateRatio); 
+        world.addDynamicEntity(cars[cars.length-1]);
     }
     return cars;
 }

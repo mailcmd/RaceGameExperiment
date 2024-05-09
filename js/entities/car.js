@@ -12,6 +12,7 @@ class Car {
 
         this.x = x;
         this.y = y;
+        this.initialPosition = new Point(x, y);
         this.width = width;
         this.height = height;
         this.controlMode = controlMode;
@@ -81,12 +82,12 @@ class Car {
     }    
     
     update() {
-        //if (this.idiotCounter >= 60 * 3) {
-        //    this.damaged = true;
-        //}
+        if (this.idiotCounter >= 60 * 3) {
+            this.damaged = true;
+        }
         if (!this.damaged) {            
             if (this.useBrain) {
-                //this.calculateScore(traffic);
+                this.calculateScore(traffic);
                 this.sensor.update(road, traffic);
                 const sensors = this.getInputs();
                     
@@ -107,7 +108,7 @@ class Car {
             } 
 
             if (this.controlType == USER_KEYBOARD1 || this.controlType == USER_KEYBOARD2) {
-                if (this.controlMode == STATIC) {
+                if (this.controlMode == STATIC || this.controlMode == FULLSCREEN) {
                     this.#directionalMove();
                 } else {
                     this.#linearMove();
@@ -120,20 +121,12 @@ class Car {
 
             this.polygon = this.#createPolygon();
             this.damaged = this.#assessDamage();
-            if (this.damaged) {
+            if (this.damaged && this.controlType != CPU) {
                 setTimeout((function(){
                     this.repair();
                 }).bind(this), 1500);
             }
-            /*    
-            if (this.penalized) {
-                this.maxSpeed = this.saveMaxSpeed * 0.2;
-            } else {
-                this.maxSpeed = this.saveMaxSpeed;
-            }
-            */
         }
-        //if (this.useBrain) this.calculateScore(traffic);
     }
 
     rotateTo(angle) {    
@@ -196,7 +189,7 @@ class Car {
         this.x -= mx;
         this.y -= my;
 
-        //this.distance += Math.hypot(mx, my);
+        this.distance += Math.sign(this.speed) * Math.hypot(mx, my);
     }
 
     #linearMove() {
@@ -233,7 +226,7 @@ class Car {
         this.x -= mx;
         this.y -= my;
 
-        //this.distance += Math.hypot(mx, my);
+        this.distance += Math.sign(this.speed) * Math.hypot(mx, my);
     }
 
     #angularMove() {
@@ -255,7 +248,7 @@ class Car {
         this.x -= mx;
         this.y -= my;
 
-        //this.distance += Math.hypot(mx, my);
+        this.distance += Math.sign(this.speed) * Math.hypot(mx, my);
     }
 
     #assessDamage() {
@@ -318,8 +311,8 @@ class Car {
         this.speed = 0;
     }
     
-    draw({ ctx, drawSensors = true}) {        
-        if (drawSensors && this.sensor) {
+    draw({ ctx, drawSensors = false}) {        
+        if (drawSensors && this.sensor || this == bestCar) {
             this.sensor.draw({ctx});
         }
         ctx.save();
@@ -342,8 +335,7 @@ class Car {
     }
 
     reset() {
-        this.x = road.getLaneCenter(1);
-        this.y = 100;
+        [ this.x, this.y ] =  [ this.initialPosition.x, this.initialPosition.y ];
         this.overpassedCars = 0;
         this.distance = 0;
         this.fitness = 0;
@@ -366,17 +358,11 @@ class Car {
         return this.overpassedCars / traffic.length;
     }
 
-    calculateScore(traffic) {
-        //if (!this.damaged) 
-        //this.score = -this.y;// * this.speed;
-        //return this.score;
-        let overpassedCars = 0;
-        for (let i = 0; i < traffic.length; i++) {
-            overpassedCars += this.y < traffic[i].y ? 1 : 0; 
+    calculateScore() {   
+        if (this.distance <= this.score) {
+            this.idiotCounter++;
         }
-        this.overpassedCars = Math.max(this.overpassedCars, overpassedCars);
-        this.score = (this.overpassedCars + 1) * this.score;
-
+        this.score = this.distance;             
         return this.score;
     }
 

@@ -21,7 +21,7 @@ const menuData =
         {
             title: "Modo",
             type: "select",
-            options: [ { value: STATIC, text: "Direccional"}, { value: ROTATE, text: "Rotativo"} ],
+            options: [ { value: STATIC, text: "Direccional"}, { value: ROTATE, text: "Rotativo"}, { value: FULLSCREEN, text: "Full Screen"} ],
             default: DEFAULT_GAMEMODE,
             variable: "gamemode",
             onchange: function(v){ 

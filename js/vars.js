@@ -34,9 +34,11 @@ let frameCount = 0;
 let frameTime = 0;
 let deltaTime = 0;
 let gamemode = DEFAULT_GAMEMODE;
+let mutateRatio = 0.05;
 
 // admin actions control
-let paused = false, showMinimap = false;
+let paused = false, showMinimap = false, resetGameNow = false;
 
-var world, viewport, minimap, roadPoints, car, road, traffic = [];
+var generation = 0;
+var world, viewport, minimap, roadPoints, car, cars, bestCar, road, traffic = [];
 

@@ -57,7 +57,8 @@ class Sensor {
             }
             this.rays.push( new Segment(start, end) );
         }
-        let rayAngle = Math.PI - Math.PI / 16;
+        
+        let rayAngle = Math.PI - Math.PI / 16 + this.car._angle;
         let start = { x: this.car.x, y: this.car.y };
         let end = {
             x: this.car.x - Math.sin(rayAngle) * this.rayLength,
@@ -65,7 +66,7 @@ class Sensor {
         }
         this.rays.push( new Segment(start, end) );
         
-        rayAngle = Math.PI + Math.PI / 16;
+        rayAngle = Math.PI + Math.PI / 16 + this.car._angle;
         start = { x: this.car.x, y: this.car.y };
         end = {
             x: this.car.x - Math.sin(rayAngle) * this.rayLength,
