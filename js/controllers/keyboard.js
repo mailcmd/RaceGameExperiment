@@ -20,17 +20,18 @@ class Keyboard {
         }) {
         this.handler = handler;
         this.userActions = userActions;
-        this.#addKeyboardListeners(type);
+        this.type = type;
+        this.#addKeyboardListeners();
     }
 
     destroy() {
-        document.removeEventListener('keydown', type == 'arrows' ? this.#arrowsListener : this.#wasdListener );
-        document.removeEventListener('keyup', type == 'arrows' ? this.#arrowsListener : this.#wasdListener );
+        document.removeEventListener('keydown', this.type == 'arrows' ? this.#arrowsListener : this.#wasdListener );
+        document.removeEventListener('keyup', this.type == 'arrows' ? this.#arrowsListener : this.#wasdListener );
     }
     
-    #addKeyboardListeners(type) {
-        document.addEventListener('keydown', type == 'arrows' ? this.#arrowsListener.bind(this) : this.#wasdListener.bind(this) );
-        document.addEventListener('keyup', type == 'arrows' ? this.#arrowsListener.bind(this) : this.#wasdListener.bind(this) );
+    #addKeyboardListeners() {
+        document.addEventListener('keydown', this.type == 'arrows' ? this.#arrowsListener.bind(this) : this.#wasdListener.bind(this) );
+        document.addEventListener('keyup', this.type == 'arrows' ? this.#arrowsListener.bind(this) : this.#wasdListener.bind(this) );
     }
     #arrowsListener(e) {
         if (e.key == 'ArrowLeft') { 

@@ -71,12 +71,15 @@ class GamepadsController {
     decodeAxis(horizontal, vertical) {
         const h = parseFloat(horizontal.toFixed(2));
         const v = -parseFloat(vertical.toFixed(2));
+        const hypmax = (1 + (min(h,v)/max(h,v))**2)**0.5; 
+        const hyp = (h**2 + v**2)**0.5; 
         const angle = h == 0 && v == 0 ? NaN : Math.atan2(v, h);
         return {
             rad: angle, 
             deg: angle ? angle.deg() : angle,
             horizontal: h,
             vertical: v,
+            hyprel: hyp / hypmax
         };
     }
 

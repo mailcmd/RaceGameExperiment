@@ -21,17 +21,18 @@ class Control {
     }
     
     change(type) {
-        if (this.type == USER_KEYBOARD1 || this.type == USER_KEYBOARD2) {
+        if (this.keyboard) {
             this.keyboard.destroy(); 
-        } else if (this.type >= USER_JOYSTICK1 && this.type <= USER_JOYSTICK4) {
-            gamepadController.addGamepadHandler(this.type - 2, {
-                pressButton: function(){},
-                releaseButton: function(){},
-                changeAxis: function(){},
-                holdAxis: function(){},
-                centerAxis: function(){}
-            });
-        }
+        } 
+        
+        gamepadController.addGamepadHandler(this.type - 2, {
+            pressButton: function(){},
+            releaseButton: function(){},
+            changeAxis: function(){},
+            holdAxis: function(){},
+            centerAxis: function(){}
+        });
+
         this.type = type;
         this.#configure();        
     }
@@ -68,10 +69,11 @@ class Control {
         }
     }
 
-    #gamepaddAxisHandler(gp) {
-        if ((gp.event == 'hold' || gp.event == 'change') && gp.id == 'left') {
+    #gamepaddAxisHandler(gp) {        
+        if (gp.id == 'left') {// && !isNaN(gp.hyprel) && gp.hyprel > 0.5) {
             this.angle = gp.rad;
-        }
+        } 
+        
     }
     #gamepaddButtonsHandler(gp) {
         this.userAction[gp.index] = gp.event == 'press' ? 1 : 0;

@@ -31,10 +31,13 @@ function animate(time) {
     // main tasks
     world.update();
     
-    const carMaxScore = Math.max(...cars.map( c => c.score ));
-    bestCar = cars.find( car => car.score ==  carMaxScore) ?? bestCar;    
-    
-//    viewport.setCenter(car.x, car.y, car.angle - PI/2);
+    if (cars) {
+        const carMaxScore = Math.max(...cars.map( c => c.score ));
+        bestCar = cars.find( car => car.score ==  carMaxScore) ?? bestCar;    
+    } 
+    if (car) {
+        viewport.setCenter(car.x, car.y, car.angle - PI/2);
+    }
     viewport.display();
 
     if (showMinimap) minimap.update();
@@ -68,21 +71,21 @@ function animate(time) {
     world.addStaticEntity(road);
     
     world.renderizeStatic();
-    /*
+    
     car = new Car({
         x: roadPoints[0].x,
         y: roadPoints[0].y,    
         width: 25,
         height: 40,
         road: road,
-        controlType: CPU, //USER_KEYBOARD1,
+        controlType: USER_KEYBOARD1,
         controlMode: DEFAULT_GAMEMODE,
         sensorsCount: 31,
         model: (await fetch('models/good_31_4.json').then(response => response.json()))
     });
     world.addDynamicEntity(car);
-    */
-    cars = generateCars(50, (await fetch('models/good_31_4.json').then(response => response.json())));
+    
+    //cars = generateCars(50, undefined);//(await fetch('models/good_31_4.json').then(response => response.json())));
 
     viewport = new Viewport({
         world: world,
@@ -107,6 +110,7 @@ function animate(time) {
         },
         onHide: function() {
             listeners.restore();
+            car.control.change(car.control.type);
         }
     });
 

@@ -16,7 +16,6 @@ class Car {
         this.width = width;
         this.height = height;
         this.controlMode = controlMode;
-        this.controlType = controlType;
         this.sensorsCount = sensorsCount;
         this.color = color;
         this.road = road;
@@ -28,16 +27,17 @@ class Car {
         this.idiotCounter = 0;
         this.speed = 0;
         this.overpassedCars = 0;
-        this.acceleration = 45;
+        this.acceleration = 25;
         this.friction = 5;
         this._angle = 0;
+        this.derrapeAngle = 0;
         this.angle = road ? road.points[0].angleTo(road.points[1]) : 0;        
         this.damaged = false;
         this.fitness = 0;
         this.score = 0;
         this.updateCounter = 0;                
 
-        if (this.controlType == CPU) {
+        if (controlType == CPU) {
             this.useBrain = true;
             this.sensor = new Sensor(this, this.sensorsCount);
             const center = this.sensorsCount % 2 == 1 ? 4 : 5;
@@ -46,10 +46,9 @@ class Car {
             if (model) {
                 this.brain.load(model);
             }
-            this.control = new Control({ entity: this, type: this.controlType });
-        } else if (this.controlType >= USER_KEYBOARD1 && this.controlType <= USER_JOYSTICK4) {
-            this.control = new Control({ entity: this, type: this.controlType });
         }        
+
+        this.control = new Control({ entity: this, type: controlType });
 
         this.img = new Image();
         this.mask = document.createElement('canvas');
@@ -107,21 +106,21 @@ class Car {
                 this.control.down = outputs[3];                
             } 
 
-            if (this.controlType == USER_KEYBOARD1 || this.controlType == USER_KEYBOARD2) {
+            if (this.control.type == USER_KEYBOARD1 || this.control.type == USER_KEYBOARD2) {
                 if (this.controlMode == STATIC || this.controlMode == FULLSCREEN) {
                     this.#directionalMove();
                 } else {
                     this.#linearMove();
                 }
-            } else if (this.controlType >= USER_JOYSTICK1 && this.controlType <= USER_JOYSTICK4) {
+            } else if (this.control.type >= USER_JOYSTICK1 && this.control.type <= USER_JOYSTICK4) {
                 this.#angularMove();
-            } else if (this.controlType == CPU) {
+            } else if (this.control.type == CPU) {
                 this.#linearMove();
             }
 
             this.polygon = this.#createPolygon();
             this.damaged = this.#assessDamage();
-            if (this.damaged && this.controlType != CPU) {
+            if (this.damaged && this.control.type != CPU) {
                 setTimeout((function(){
                     this.repair();
                 }).bind(this), 1500);
@@ -137,6 +136,8 @@ class Car {
             this.angle = angle; 
             return;
         }
+        this.derrapeAngle = this.angle - angle;
+        
         if (angle == 0) {
             if (this.angle > PI) {
                 this.angle += flip; 
@@ -162,6 +163,9 @@ class Car {
         this.speed = this.speed > this.maxSpeed 
             ? this.maxSpeed 
             : this.speed <= this.friction ? 0 : this.speed;            
+
+        this.derrapeAngle = -sign(this.derrapeAngle)*0.05;
+        this.derrapeAngle = this.derrapeAngle < 0.05 ? 0 : this.derrapeAngle;
 
         if (this.speed > 0) {        
             if (this.control.up && this.control.right) {
@@ -235,13 +239,15 @@ class Car {
         if (this.control.userAction[0] || this.control.userAction[1]) {
             this.speed += this.acceleration * (this.control.userAction[1] ? -0.5 : 1);
         }
-        
+
         this.speed -= this.friction;
 
         this.speed = this.speed > this.maxSpeed 
             ? this.maxSpeed 
             : this.speed <= this.friction ? 0 : this.speed;            
 
+        if (!isNaN(this.control.angle) && this.speed != 0) this.rotateTo(this.control.angle);        
+        
         const mx = Math.sin(this._angle) * this.speed * deltaCoef;
         const my = Math.cos(this._angle) * this.speed * deltaCoef;
 
@@ -307,6 +313,7 @@ class Car {
         this.x = this.road.points[idx].x;
         this.y = this.road.points[idx].y; 
         this.angle = this.road.points[idx].angleTo( this.road.points[idx == this.road.points.length-1 ? 0 : idx+1 ] );
+        this.derrapeAngle = 0;
         this.damaged = false;
         this.speed = 0;
     }
@@ -317,7 +324,7 @@ class Car {
         }
         ctx.save();
         ctx.translate(this.x, this.y);
-        ctx.rotate(-this._angle);
+        ctx.rotate(-this._angle+(this.derrapeAngle/PI));
         if (!this.damaged) {
             ctx.drawImage(
                 this.mask, 
@@ -340,6 +347,7 @@ class Car {
         this.distance = 0;
         this.fitness = 0;
         this.angle = 0;
+        this.derrapeAngle = 0;
         this.speed = 0;
         this.damaged = false;
         this.superiorRace = false;
