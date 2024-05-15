@@ -136,18 +136,21 @@ class Car {
             this.angle = angle; 
             return;
         }
-        this.derrapeAngle = this.angle - angle;
         
         if (angle == 0) {
             if (this.angle > PI) {
                 this.angle += flip; 
+                this.derrapeAngle = -flip;
             } else {
                 this.angle -= flip; 
+                this.derrapeAngle = flip;
             }
         } else if (standarizeAngle1E(angle + 2*PI - this.angle) < PI) {
             this.angle += flip; 
+            this.derrapeAngle = -flip;
         } else {
             this.angle -= flip; 
+            this.derrapeAngle = flip;;
         }
     }
 
@@ -324,7 +327,7 @@ class Car {
         }
         ctx.save();
         ctx.translate(this.x, this.y);
-        ctx.rotate(-this._angle+(this.derrapeAngle/PI));
+        ctx.rotate(-this._angle+8*this.derrapeAngle);
         if (!this.damaged) {
             ctx.drawImage(
                 this.mask, 
