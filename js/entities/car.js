@@ -129,7 +129,7 @@ class Car {
     }
 
     rotateTo(angle) {    
-        const eps = 0.2;
+        const eps = 0.1;
         const deltaCoef = deltaTime / 1000;
         const flip = (this.rotateSpeed+1) * deltaCoef;
         if (abs(this.angle - angle) <= eps) {

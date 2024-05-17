@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>P2P - Slave</title>
+  <link rel="stylesheet" href="#" />
+</head>
+
+<body>
+  <h1>Slave window</h1>
+
+  <div>
+    <pre id="status"></pre>
+    <pre id="messages"></pre>
+  </div>
+
+  <script src="masterconnector.js"></script>  
+  <script>
+ 
+    const status = document.getElementById('status');
+    const messages = document.getElementById('messages');
+
+    const slave = new P2PConnection({
+        role: 'slave',
+        name: 'lacayo',
+        channelName: 'test',
+        onmessage: function(mess) {
+            console.log(mess)
+            //document.querySelector('#code').innerText = code;
+        },
+        onstatuschange: function(status) {
+            document.querySelector('#status').innerText = status;
+        },
+        signalSend: async function(code, type, data) {
+            const response = await fetch(`save.php?filename=${code}.${type}&data=${data}`, {
+                method: 'POST'
+            })
+            return response.text();
+        },
+        signalReceive: async function(code, type) {
+            const response = await fetch(`load.php?filename=${code}.${type}`, {
+                method: 'POST'
+            })
+            return response.text();
+        },
+    });    
+    
+    slave.inputCode();
+  
+  </script>
+</body>
+</html>

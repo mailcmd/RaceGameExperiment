@@ -117,7 +117,7 @@ function animate(time) {
     // init main loop
     animate(1);
 
-    setTimeout( togglePause, 500 );
+    //setTimeout( togglePause, 500 );
 //});
 })();
 

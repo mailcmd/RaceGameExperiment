@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>P2P - Master</title>
+</head>
+
+<body>
+  <h1>Master window</h1>
+
+  <div>
+    <button id="offerButton" onclick="createOffer()">Offer</button>
+
+    <pre id="code"></pre>
+    <pre id="status"></pre>
+    <pre id="messages"></pre>
+    
+  </div>
+
+  <script>  
+  
+    const status = document.getElementById('status');
+    const messages = document.getElementById('messages');
+  
+    const opts = {
+        iceServers: [{ urls: ["stun:stun.gmx.net"] }]
+    };
+    const master = new RTCPeerConnection(opts);
+    master.onicecandidate = function (e) {
+        if (e.candidate == null) {
+            const code = Array(5).fill(0).map( n => String.fromCharCode((Math.random()*25+65)|0) ).join('');
+            const content = btoa(JSON.stringify(master.localDescription));
+            const data = btoa(JSON.stringify({ filename: code+'.offer', content }));
+            fetch('save.php?data='+data, {
+                method: 'POST'
+            }).then( response => response.text().then( pollAnswer(code) ) );
+            status.innerText = 'Waiting for '+code;
+            document.getElementById('code').innerText = code;
+        }
+    };
+    master.onconnectionstatechange = console.log;
+    master.oniceconnectionstatechange = console.log;
+  
+    const channel = master.createDataChannel('data');    
+    channel.onopen = (ch) => {   
+        status.innerText = 'Connected!!!';
+    };
+    channel.onmessage = (e) => {
+        messages.innerText += e.data+'\n';
+    };
+    
+    function createOffer() {
+        master.createOffer().then( offer => {
+            master.setLocalDescription(offer);
+        }).catch( console.warn );
+    }
+
+    function acceptAnswer(answer) {
+        const answerDesc = new RTCSessionDescription(JSON.parse(answer))
+        master.setRemoteDescription(answerDesc);
+    }
+    
+    function pollAnswer(code) {
+        fetch('load.php?filename='+code+'.answer').then( response => response.text().then( answer => {
+            console.log(answer)
+            if (answer.trim() == '') {
+                status.innerText += '.';
+                setTimeout(()=>pollAnswer(code), 500);
+            } else {
+                acceptAnswer(answer);
+            }  
+        }));
+    }
+    
+  </script>
+</body>
+</html>

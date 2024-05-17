@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>P2P - Slave</title>
+  <link rel="stylesheet" href="#" />
+</head>
+
+<body>
+  <h1>Slave window</h1>
+
+  <div>
+    <input id="code"/><button id="answerButton" onclick="sendCode()">Join</button>
+    <pre id="status"></pre>
+    <pre id="messages"></pre>
+  </div>
+  
+  <script>
+ 
+    const status = document.getElementById('status');
+    const messages = document.getElementById('messages');
+
+    let channel;
+    
+    const opts = {
+        iceServers: [{ urls: ["stun:stun.gmx.net"] }]
+    };
+    const slave = new RTCPeerConnection(opts);    
+    slave.onicecandidate = function (e) {
+        if (e.candidate == null) {
+            status.innerText = 'Waiting confirmation...';
+            const filename = code.value;
+            const content = btoa(JSON.stringify(slave.localDescription));
+            const data = btoa(JSON.stringify({ filename: filename+'.answer', content }));
+            fetch('save.php?data='+data, {
+                method: 'POST'
+            });
+        }
+    };
+    slave.onconnectionstatechange = console.log;
+    slave.oniceconnectionstatechange = console.log;
+        
+    slave.ondatachannel = (e) => {
+        channel = e.channel || e;
+        channel.onopen = console.log;
+        channel.onmessage = (e) => {
+            console.log(e)
+            messages.innerText += e.data+'\n';
+        };        
+        status.innerText = 'Connected!!!';
+    }
+
+    function createAnswer(offer) {
+        const offerDesc = new RTCSessionDescription(JSON.parse(offer));
+        slave.setRemoteDescription(offerDesc);
+        
+        slave.createAnswer().then( answer => {
+            slave.setLocalDescription(answer);
+        }).catch( console.warn );
+    }    
+
+    function sendCode() {
+        status.innerText = 'Connecting...';
+        fetch('load.php?filename='+code.value+'.offer').then( response => response.text().then( createAnswer ) );        
+    }
+  
+  </script>
+</body>
+</html>
