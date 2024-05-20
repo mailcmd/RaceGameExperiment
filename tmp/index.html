@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Virtual Gamepad</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100vw;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            cursor: none;
+        }
+
+        @media screen and (orientation:portrait) {
+            body {
+                flex-direction: column;
+            }
+        }
+        @media screen and (orientation:landscape) {
+            body {
+                flex-direction: row;
+            }
+        }
+    </style>
+  </head>
+  <body>
+    <button id="initButton" onclick="init(this)" style="font-size: 1000%; justify-self: center;">Init</button>
+    <script src="vgamepad.js"></script>
+    <script>
+        const button = document.getElementById('initButton');
+        let v ;
+        window.addEventListener("fullscreenchange", (event) => {
+            if (document.fullscreenElement) {
+                button.style.display = 'none';
+            } else {
+                button.style.display = 'block';
+            }
+        });
+        document.body.addEventListener('touchstart', (e)=>e.touches.length > 1 && document.body.exitFullscreen());
+        function init() {
+            button.remove();
+            document.body.requestFullscreen();
+            const vgamepad = new Stick();        
+            v = vgamepad;
+        }
+    </script>
+  </body>
+</html>
