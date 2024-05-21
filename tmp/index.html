@@ -6,6 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Virtual Gamepad</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon">
+<!--
     <style>
         body {
             display: flex;
@@ -16,24 +17,59 @@
             margin: 0;
             padding: 0;
             overflow: hidden;
-            cursor: none;
+            __cursor: none;
+            __background-color: black;
         }
 
         @media screen and (orientation:portrait) {
             body {
                 flex-direction: column;
             }
+            body > div {
+                height: 50%;
+                width: 100%;
+            }
         }
         @media screen and (orientation:landscape) {
             body {
                 flex-direction: row;
             }
+            body > div {
+                height: 100%;
+                width: 50%;
+            }
+        }
+        
+        body > div {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            position: relative;
         }
     </style>
+-->    
   </head>
   <body>
+<!--    
     <button id="initButton" onclick="init(this)" style="font-size: 1000%; justify-self: center;">Init</button>
+    <div id="stick" style="_margin-right: auto;"></div>
+    <div id="buttons" style="_margin-left: auto;"></div>
+-->    
     <script src="vgamepad.js"></script>
+    <script>
+        const vgp = new VGamepad({
+            type: VGP_TYPE_PLAYSTATION,
+            axisCenterHandler: console.log,
+            axisHoldHandler: console.log,
+            axisChangeHandler: console.log,
+            buttonPressHandler: console.log,
+            buttonReleaseHandler: console.log
+        });
+    </script>
+    <!--
     <script>
         const button = document.getElementById('initButton');
         let v ;
@@ -48,9 +84,51 @@
         function init() {
             button.remove();
             document.body.requestFullscreen();
-            const vgamepad = new Stick();        
-            v = vgamepad;
+            
+            const stick = new GamepadStick({ 
+                container: document.getElementById('stick'),
+                size: 70,
+                color: '#b80000',
+                position: {
+                    bottom: '10px',
+                    left: '0px'
+                } 
+            });        
+            const btns = [ 
+                new GamepadButton({ 
+                    container: document.getElementById('buttons'),
+                    position: { left: 60, top: 40 },
+                    color: '#980000',
+                    label: '1'
+                }), 
+                new GamepadButton({ 
+                    container: document.getElementById('buttons'),
+                    position: { left: 80, top: 60 },
+                    color: '#980000',
+                    label: '2'
+                }), 
+                new GamepadButton({ 
+                    container: document.getElementById('buttons'),
+                    position: { left: 60, top: 80 },
+                    color: '#980000',
+                    label: '3'
+                }), 
+                new GamepadButton({ 
+                    container: document.getElementById('buttons'),
+                    position: { left: 40, top: 60 },
+                    color: '#980000',
+                    label: '4'
+                }), 
+            ];
+            
+            //btn.addEventListener('gpbuttonpress', console.log );
+            //btn.addEventListener('gpbuttonrelease', console.log );
+
+            btns[0].addEventListener('gpbuttonhit', (e)=>document.exitFullscreen());
+            
+            //v = vgamepad;
         }
     </script>
+    -->
   </body>
 </html>
