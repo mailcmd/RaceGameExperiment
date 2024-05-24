@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Virtual Gamepad</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <style>
+        body {
+            background-color: black;
+        }
+    
+        @media screen and (orientation:portrait) {
+            body {
+                display: flex;
+                padding: 0;
+                margin: 0;
+                width: 100vw;
+                height: 100vh;
+                align-items: center;
+            }
+            body::before {
+                content: "Please rotate the mobile!";
+                font-size: 15vw;
+                font-family: Arial;
+                color: cyan;
+                width: 100vw;
+                display: block;
+                position: absolute;
+                text-align: center; 
+            }
+            body * {
+                visibility: hidden;
+            }
+        }
+        @media screen and (orientation:landscape) {
+            body {
+            }
+            body * {
+                visibility: visible;
+            }
+        }    
+    </style>
+  </head>
+  <body>
+    <script src="js/controllers/p2pconnector.js"></script>
+    <script src="js/controllers/vgamepad.js"></script>
+    <script>
+    
+    let vgp;
+    
+    const p2p = new P2PConnection({
+        role: 'slave',
+        name: 'vgamepad',
+        channelName: 'vgamepad',
+        onmessage: function(mess) {
+            console.log(mess)
+        },
+        onstatuschange: function(status) {
+            console.log(status);
+            if (status == 'Connected') {
+                vgp = new VGamepad({
+                    type: VGP_TYPE_GENERIC,
+                    axisCenterHandler: p2p.send,
+                    axisHoldHandler: p2p.send,
+                    axisChangeHandler: p2p.send,
+                    buttonPressHandler: p2p.send,
+                    buttonReleaseHandler: p2p.send 
+                });            
+            }
+        },
+        signalSend: async function(code, type, data) {
+            const response = await fetch(`backend/save.php?filename=${code}.${type}&data=${data}`, {
+                method: 'POST'
+            })
+            return response.text();
+        },
+        signalReceive: async function(code, type) {
+            const response = await fetch(`backend/load.php?filename=${code}.${type}`, {
+                method: 'POST'
+            })
+            return response.text();
+        },
+    });
+    
+    const prms = new URLSearchParams(location.search);
+    p2p.join(prms.get('code'));
+    
+    </script>
+  </body>
+</html>

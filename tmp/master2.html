@@ -16,23 +16,35 @@
     <pre id="messages"></pre>
     
   </div>
-
-  <script src="masterconnector.js"></script>
+  <div popover="manual" id="qrcode"></div>
+  <script src="qrcode.js"></script>
+  <script src="../js/controllers/p2pconnector.js"></script>
   <script>  
   
+    const qrdiv = document.querySelector('#qrcode');
     const master = new P2PConnection({
         role: 'master',
         name: 'rey',
-        channelName: 'test',
+        channelName: 'vgamepad',
         onmessage: function(mess) {
             console.log(mess)
-            //document.querySelector('#code').innerText = code;
+            document.querySelector('#code').innerText += '\n'+ JSON.stringify(mess); 
         },
         oninvite: function(code) {
             document.querySelector('#code').innerText = code;
+            qrcode = new QRCode(qrdiv, {
+                text: 'http://192.168.2.248/RaceGameExperiment/vgp.html?code='+code,
+                width: 256,
+                height: 256,
+                colorDark : "#000000",
+                colorLight : "#ffffff",
+                //correctLevel : QRCode.CorrectLevel.H
+            });
+            qrdiv.showPopover();
         },
         onstatuschange: function(status) {
             document.querySelector('#status').innerText = status;
+            if (status == 'Connected') qrdiv.hidePopover();
         },
         signalSend: async function(code, type, data) {
             const response = await fetch(`save.php?filename=${code}.${type}&data=${data}`, {
