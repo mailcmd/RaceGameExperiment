@@ -50,7 +50,7 @@ class Control {
                 handler: this.#keyboardHandler.bind(this),
                 userActions: [ 'Control', ' ' ]
             });
-        } else if (this.type >= USER_JOYSTICK1 && this.type <= USER_JOYSTICK4) {
+        } else if (this.type >= USER_JOYSTICK1 && this.type <= USER_JOYSTICK4 || this.type >= USER_RJOYSTICK) {
             gamepadController.addGamepadHandler(this.type - 2, {
                 pressButton: this.#gamepaddButtonsHandler.bind(this),
                 releaseButton: this.#gamepaddButtonsHandler.bind(this),

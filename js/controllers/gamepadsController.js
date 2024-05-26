@@ -11,6 +11,7 @@ class GamepadsController {
     update() {
         for (let i = 0; i < this.gamepads.length; i ++) {
             const gp = this.gamepads[i];
+            if (gp.isRemote) continue;
             for (let j = 0; j < gp.buttons.length; j++) {
                 if (gp.buttons[j].pressed == gp.status.buttons[j].pressed) continue;
                 gp.status.buttons[j].pressed = gp.buttons[j].pressed;                
@@ -79,7 +80,8 @@ class GamepadsController {
             deg: angle ? angle.deg() : angle,
             horizontal: h,
             vertical: v,
-            hyprel: hyp / hypmax
+            hyprel: hyp / hypmax,
+            hypn: hyp / hypmax
         };
     }
 
@@ -106,7 +108,7 @@ class GamepadsController {
     search() {
         const gamepads = navigator.getGamepads ? navigator.getGamepads() : (navigator.webkitGetGamepads ? navigator.webkitGetGamepads() : []);
         for (let i = 0; i < gamepads.length; i++) {
-            this.#newGamepad({ gamepad: Gamepads[i] });
+            this.#newGamepad({ gamepad: gamepads[i] });
         }
     }
     
@@ -115,29 +117,51 @@ class GamepadsController {
     }
 
     #addControllerListeners() {
+        window.addEventListener('rgamepadconnected', this.#newGamepad.bind(this), false);
         window.addEventListener('gamepadconnected', this.#newGamepad.bind(this), false);
         window.addEventListener('gamepaddisconnected', this.#lostGamepad.bind(this), false);        
+        window.addEventListener('rgamepadmessage', this.#rgamepadEvent.bind(this), false);        
+    }
+
+    #rgamepadEvent(e) {
+        const mess = e.detail;
+        const i = mess.gpIndex;
+        if (mess.event == 'press') {
+            this.gamepadsHandlers[i].pressButton(mess);
+        } else if (mess.event == 'release') {
+            this.gamepadsHandlers[i].pressButton(mess);
+        } else if (mess.event == 'change') {
+            this.gamepadsHandlers[i].changeAxis(mess);
+        } else if (mess.event == 'center') {
+            this.gamepadsHandlers[i].centerAxis(mess);
+        } else if (mess.event == 'hold') {
+            this.gamepadsHandlers[i].holdAxis(mess);
+        }
     }
 
     #newGamepad(e) {
-        this.gamepads[e.gamepad.index] = e.gamepad;
-        this.gamepads[e.gamepad.index].status = { 
-            buttons: [], 
-            leftStick: { rad: NaN, horizontal: 0, vertical: 0 }, 
-            rightStick: { rad: NaN, horizontal: 0, vertical: 0 }
-        };
-        for (let i = 0; i < e.gamepad.buttons.length; i++) {
-            this.gamepads[e.gamepad.index].status.buttons[i] = {};
-            for (let k in e.gamepad.buttons[i]) {
-                this.gamepads[e.gamepad.index].status.buttons[i][k] = e.gamepad.buttons[i][k];
+        if (e.detail) e.gamepad = e.detail;
+        if (e.gamepad.isRemote) {
+            this.gamepads[e.gamepad.index] = e.gamepad;
+        } else {
+            this.gamepads[e.gamepad.index] = e.gamepad;
+            this.gamepads[e.gamepad.index].status = { 
+                buttons: [], 
+                leftStick: { rad: NaN, horizontal: 0, vertical: 0 }, 
+                rightStick: { rad: NaN, horizontal: 0, vertical: 0 }
+            };
+            for (let i = 0; i < e.gamepad.buttons.length; i++) {
+                this.gamepads[e.gamepad.index].status.buttons[i] = {};
+                for (let k in e.gamepad.buttons[i]) {
+                    this.gamepads[e.gamepad.index].status.buttons[i][k] = e.gamepad.buttons[i][k];
+                }
             }
+            this.statusHandler({ self: this, type: 'add', gamepad: e.gamepad });
+            if (this.getGamepads().length == 1) this.update();
         }
         log('Controller found at index ' + e.gamepad.index + '.');
         log(this.gamepads[e.gamepad.index].id + ' is ready!');
-        this.statusHandler({ self: this, type: 'add', gamepad: e.gamepad });
-        if (this.getGamepads().length == 1) this.update();
-        
-    }
+}
 
     #lostGamepad(e) {
         log('The controller at index ' + e.gamepad.index + ' has been disconnected.');

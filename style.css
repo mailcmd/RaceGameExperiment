@@ -50,6 +50,7 @@ body {
     flex-direction: row;
     justify-content: right;
     padding: 10px;
+    z-index: 1;
 }
 
 button {

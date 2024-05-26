@@ -64,7 +64,6 @@ function restoreModel(name = 'model') {
     return JSON.parse(localStorage.getItem(name));
 }
 
-
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 function addTrainingData(car) {

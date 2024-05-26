@@ -12,16 +12,21 @@
   <body>
     <div id="paused"></div>
 
+    <div popover="manual" id="qrcode"></div>
     <div id="tool-bar">
-      <button onclick="editor.loadFromFile()" title="Cargar">&#x1F4C1;</button>
+      <button onclick="rgamepad.invite()" title="Remote Gamepad">&#127918;</button>
     </div>
-    
+
+    <script src="js/3rdparty/qrcode.js"></script>
+
     <script src="js/primitives/point.js"></script>
     <script src="js/primitives/segment.js"></script>
     <script src="js/primitives/polygon.js"></script>
 
+    <script src="js/controllers/p2pconnector.js"></script>
     <script src="js/controllers/listeners.js"></script>
-    <script src="js/controllers/gamepad.js"></script>
+    <script src="js/controllers/gamepadsController.js"></script>
+    <script src="js/controllers/rgamepad.js"></script>
     <script src="js/controllers/keyboard.js"></script>
     
     <script src="js/ai/network.js"></script>

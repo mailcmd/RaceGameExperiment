@@ -31,9 +31,10 @@
             document.querySelector('#code').innerText += '\n'+ JSON.stringify(mess); 
         },
         oninvite: function(code) {
+            const url = new URL(location.href);
             document.querySelector('#code').innerText = code;
             qrcode = new QRCode(qrdiv, {
-                text: 'http://192.168.2.248/RaceGameExperiment/vgp.html?code='+code,
+                text: url.protocol + '//' + url.hostname + ':' + url.port + '/vgp.html?code='+code,
                 width: 256,
                 height: 256,
                 colorDark : "#000000",

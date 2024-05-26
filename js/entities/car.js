@@ -112,14 +112,20 @@ class Car {
                 } else {
                     this.#linearMove();
                 }
-            } else if (this.control.type >= USER_JOYSTICK1 && this.control.type <= USER_JOYSTICK4) {
+            } else if (this.control.type >= USER_JOYSTICK1 && this.control.type <= USER_JOYSTICK4 || this.control.type >= USER_RJOYSTICK) {
                 this.#angularMove();
             } else if (this.control.type == CPU) {
                 this.#linearMove();
             }
 
             this.polygon = this.#createPolygon();
-            this.damaged = this.#assessDamage();
+            //this.damaged = this.#assessDamage();
+            if (this.#assessDamage()) {
+                this.maxSpeed = this.saveMaxSpeed / 3;
+            } else {
+                this.maxSpeed = this.saveMaxSpeed;
+            }
+
             if (this.damaged && this.control.type != CPU) {
                 setTimeout((function(){
                     this.repair();
@@ -151,6 +157,9 @@ class Car {
         } else {
             this.angle -= flip; 
             this.derrapeAngle = flip;;
+        }
+        if (this.control.type >= USER_JOYSTICK1 && this.control.type <= USER_JOYSTICK4 || this.control.type >= USER_RJOYSTICK) {
+            this.derrapeAngle = 0;
         }
     }
 
@@ -239,7 +248,7 @@ class Car {
     #angularMove() {
         const deltaCoef = deltaTime / 1000;
 
-        if (this.control.userAction[0] || this.control.userAction[1]) {
+        if (this.control.userAction[2] || this.control.userAction[1]) {
             this.speed += this.acceleration * (this.control.userAction[1] ? -0.5 : 1);
         }
 
@@ -249,7 +258,7 @@ class Car {
             ? this.maxSpeed 
             : this.speed <= this.friction ? 0 : this.speed;            
 
-        if (!isNaN(this.control.angle) && this.speed != 0) this.rotateTo(this.control.angle);        
+        if (!isNaN(this.control.angle) && this.control.angle !== null && this.speed != 0) this.rotateTo(this.control.angle);        
         
         const mx = Math.sin(this._angle) * this.speed * deltaCoef;
         const my = Math.cos(this._angle) * this.speed * deltaCoef;

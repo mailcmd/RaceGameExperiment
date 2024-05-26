@@ -70,7 +70,8 @@ const menuData =
                 { value: USER_JOYSTICK1, text: "Gamepad 1"},  
                 { value: USER_JOYSTICK2, text: "Gamepad 2"},  
                 { value: USER_JOYSTICK3, text: "Gamepad 3"},  
-                { value: USER_JOYSTICK4, text: "Gamepad 4"}  
+                { value: USER_JOYSTICK3, text: "Gamepad 3"},  
+                { value: USER_RJOYSTICK, text: "RGamepad"}  
             ],
             default: USER_KEYBOARD1,
             variable: "car.control.type",

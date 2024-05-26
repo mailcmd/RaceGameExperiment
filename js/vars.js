@@ -14,6 +14,7 @@ const
     USER_JOYSTICK2 = 3, 
     USER_JOYSTICK3 = 4, 
     USER_JOYSTICK4 = 5, 
+    USER_RJOYSTICK = 102, 
     CPU = 98, DUMMY = 99;
     
 const STATIC = 1, ROTATE = 2, FULLSCREEN = 3;

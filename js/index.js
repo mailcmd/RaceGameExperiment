@@ -21,6 +21,7 @@ document.addEventListener('keydown', e => {
 
 const listeners = new ListenersManager();
 const gamepadController = new GamepadsController();
+const rgamepad = new RGamepad();
 const editor = new TrackEditor(document.createElement('canvas'), { hidden: true });
 
 // main functions
@@ -78,7 +79,7 @@ function animate(time) {
         width: 25,
         height: 40,
         road: road,
-        controlType: USER_KEYBOARD1,
+        controlType: USER_RJOYSTICK,
         controlMode: DEFAULT_GAMEMODE,
         sensorsCount: 31,
         model: (await fetch('models/good_31_4.json').then(response => response.json()))

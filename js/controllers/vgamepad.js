@@ -24,7 +24,7 @@ const
 class VGamepad {
     constructor({
         vendor = 'Just for Fun VGamepad Device',
-        index = 0,
+        index = 100,
         type = VGP_TYPE_GENERIC,
         mode = VGP_MODE_FULLSCREEN,
         axisCenterHandler = function(){},
@@ -33,8 +33,10 @@ class VGamepad {
         buttonPressHandler = function(){},
         buttonReleaseHandler = function(){}
     } = {}) {
+        this.index = index;
         this.mode = mode;
         this.type = type;
+        this.vendor = vendor;
         this.axisCenterHandler = axisCenterHandler;
         this.axisHoldHandler = axisHoldHandler;
         this.axisChangeHandler = axisChangeHandler;
@@ -235,20 +237,20 @@ class VGamepad {
     }
     
     #axisCenterHandlerWraper(e) {
-        this.axisCenterHandler({ event: 'center', ...e.detail }); 
+        this.axisCenterHandler({ event: 'center', gpIndex: this.index, ...e.detail }); 
     }
     #axisChangeHandlerWraper(e) {
-        this.axisChangeHandler({ event: 'change', ...e.detail }); 
+        this.axisChangeHandler({ event: 'change', gpIndex: this.index, ...e.detail }); 
     }
     #axisHoldHandlerWraper(e) {
-        this.axisHoldHandler({ event: 'hold', ...e.detail }); 
+        this.axisHoldHandler({ event: 'hold', gpIndex: this.index, ...e.detail }); 
     }
 
     #buttonPressHandlerWraper(e) {
-        this.buttonPressHandler({ event: 'press', index: e.detail.id, ...e.detail }); 
+        this.buttonPressHandler({ event: 'press', gpIndex: this.index, ...e.detail }); 
     }
     #buttonReleaseHandlerWraper(e) {
-        this.buttonReleaseHandler({ event: 'release', index: e.detail.id, ...e.detail }); 
+        this.buttonReleaseHandler({ event: 'release', gpIndex: this.index, ...e.detail }); 
     }
 
 }
@@ -263,7 +265,7 @@ class GamepadStick extends EventTarget {
         container = document.body,
         size = 80,
         axisSize,
-        angleSlots = 64, // NOT USED
+        angleSlots = 180, // NOT USED
         position = null
     } = {}) {
 
@@ -272,11 +274,10 @@ class GamepadStick extends EventTarget {
         this.id = id;
         
         this.discretsAnglesMoves = [];
-        /*
+        
         for (let i = 0; i <= angleSlots; i++) {
             this.discretsAnglesMoves.push( -Math.PI + i*(2*Math.PI/angleSlots) );
-        }
-        */
+        }        
 
         this.move = {x: 0, y: 0, startX: 0, startY: 0};
         this.container = container;
@@ -401,14 +402,15 @@ class GamepadStick extends EventTarget {
             x = coef * x;
             y = coef * y;
             let hyp = (x**2 + y**2)**0.5;
+            let angle = standarizeAngle2M(Math.atan2(y, x));
+
+            angle = this.discretsAnglesMoves.sort( (a,b) => Math.abs(angle-a) - Math.abs(angle-b) )[0];
 
             if (hyp <= maxMoveDistance) {
-                let angle = standarizeAngle2M(Math.atan2(y, x));
                 this.move.x = hyp * Math.cos(angle);
                 this.move.y = hyp * Math.sin(angle);
                 this.angle = standarizeAngle2M(Math.PI - angle);
             } else {
-                let angle = standarizeAngle2M(Math.atan2(y, x));
                 hyp = maxMoveDistance;
                 x = hyp * Math.cos(angle);
                 y = hyp * Math.sin(angle);
@@ -521,6 +523,7 @@ class GamepadButton extends EventTarget {
             this.dispatchEvent(new CustomEvent('vgpbuttonpress', {
                 detail: {
                     id: this.id,
+                    index: this.id,
                     label: this.label,
                     value: 1
                 }
@@ -531,6 +534,7 @@ class GamepadButton extends EventTarget {
             this.dispatchEvent(new CustomEvent('vgpbuttonrelease', {
                 detail: {
                     id: this.id,
+                    index: this.id,
                     label: this.label,
                     value: 0
                 }
@@ -538,6 +542,7 @@ class GamepadButton extends EventTarget {
             this.dispatchEvent(new CustomEvent('vgpbuttonhit', {
                 detail: {
                     id: this.id,
+                    index: this.id,
                     label: this.label
                 }
             }));

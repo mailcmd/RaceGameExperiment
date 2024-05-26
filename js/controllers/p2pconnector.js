@@ -41,7 +41,7 @@ class P2PConnection {
                     this.signalSend(this.code, 'offer', data).then((data) => { 
                         this.oninvite(this.code);
                         this.status = 'Waiting answer';
-                        (this.#pollAnswer.bind(this))(this.code); 
+                        this.#pollAnswer.bind(this)(this.code); 
                     });                    
                 }
             }).bind(this);
