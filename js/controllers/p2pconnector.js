@@ -153,11 +153,15 @@ class P2PConnection {
     #pollAnswer(code) {
         this.signalReceive.bind(this)(code, 'answer').then( answer => {
             if (answer.trim() == '') {
-                setTimeout(()=>(this.#pollAnswer.bind(this))(code), this.pollEvery);
+                this.pollTimeout = setTimeout(()=>(this.#pollAnswer.bind(this))(code), this.pollEvery);
             } else {
                 this.#acceptAnswer.bind(this)(answer);
             }  
         });
+    }
+    
+    cancel() {
+        clearTimeout(this.pollTimeout);
     }
     
     // role slave methods
@@ -183,3 +187,5 @@ class P2PConnection {
         this.signalReceive(this.code, 'offer').then( this.#createAnswer.bind(this) );
     }    
 }
+
+window.P2PConnectionLoaded = true;
