@@ -79,7 +79,7 @@ function animate(time) {
         width: 25,
         height: 40,
         road: road,
-        controlType: USER_RJOYSTICK,
+        controlType: USER_KEYBOARD1,
         controlMode: DEFAULT_GAMEMODE,
         sensorsCount: 31,
         model: (await fetch('models/good_31_4.json').then(response => response.json()))
